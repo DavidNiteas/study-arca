@@ -317,6 +317,67 @@ def cmd_deck(args) -> int:
     return 0
 
 
+def cmd_report_output(args, output_format: str) -> int:
+    from .report_outputs import build_report, convert_legacy_report, inspect_report_output, validate_report_plan
+
+    project = Path(args.project).resolve()
+
+    def local(value: str) -> Path:
+        path = Path(value)
+        if not path.is_absolute():
+            path = project / path
+        path = path.resolve()
+        if not path.is_relative_to(project):
+            raise ProjectError("报告 Plan 与产物必须位于项目目录")
+        return path
+
+    if args.action == "convert":
+        if not all((args.source, args.snapshot, args.plan_id, args.output)):
+            raise ProjectError(
+                f"{output_format} convert 需要 --source/--snapshot/--plan-id/--output"
+            )
+        plan = convert_legacy_report(
+            project,
+            local(args.source),
+            snapshot=args.snapshot,
+            plan_id=args.plan_id,
+            output_format=output_format,
+            title=args.title,
+        )
+        output = local(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"已生成 {plan['schema']}：{output}")
+        return 0
+
+    if not args.plan:
+        raise ProjectError(f"{output_format} {args.action} 需要 --plan")
+    plan_path = local(args.plan)
+    try:
+        plan = json.loads(plan_path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError) as exc:
+        raise ProjectError(f"无法读取报告 Plan：{plan_path}: {exc}") from exc
+    if not isinstance(plan, dict):
+        raise ProjectError("报告 Plan 必须是 JSON 对象")
+    errors = validate_report_plan(plan, output_format)
+    if args.action == "validate":
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"{plan.get('schema', 'report plan')}：{len(errors)} error")
+        return 1 if errors else 0
+    if errors:
+        raise ProjectError("\n".join(errors))
+    if not args.output:
+        raise ProjectError(f"{output_format} build 需要 --output")
+    output = build_report(project, plan, local(args.output))
+    inspection = inspect_report_output(output)
+    print(f"已生成报告产物：{output}")
+    print(json.dumps(inspection, ensure_ascii=False))
+    if inspection.get("self_contained") is False:
+        return 1
+    return 0
+
+
 def cmd_render(args) -> int:
     project = Path(args.project)
     if args.action == "build":
@@ -691,6 +752,18 @@ def build_parser() -> argparse.ArgumentParser:
     deck.add_argument("--contact-per-sheet", type=int, default=6)
     deck.add_argument("--contact-columns", type=int, default=2)
     deck.set_defaults(func=cmd_deck)
+
+    for name, output_format in (("document", "docx"), ("experience", "html")):
+        report = sub.add_parser(name, help=f"{output_format.upper()} 独立输出流程")
+        report.add_argument("action", choices=["convert", "validate", "build"])
+        report.add_argument("project")
+        report.add_argument("--source")
+        report.add_argument("--snapshot")
+        report.add_argument("--plan-id")
+        report.add_argument("--plan")
+        report.add_argument("--output")
+        report.add_argument("--title")
+        report.set_defaults(func=lambda args, fmt=output_format: cmd_report_output(args, fmt))
 
     selftest = sub.add_parser("selftest", help="工具自身回归测试")
     selftest.set_defaults(func=cmd_selftest)

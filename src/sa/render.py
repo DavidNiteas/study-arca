@@ -433,7 +433,7 @@ def _references(document: dict, project: Path) -> str:
     return '<ol class="refs">' + "".join(rows) + "</ol>"
 
 
-def render_html(project: Path, document: dict | None = None) -> Path:
+def render_html(project: Path, document: dict | None = None, *, output: Path | str | None = None) -> Path:
     project = project.resolve()
     if document is None:
         doc_path = project / "report" / "document.json"
@@ -636,7 +636,12 @@ document.getElementById('print').addEventListener('click',()=>window.print());
 </body>
 </html>
 """
-    out = project / "report" / "index.html"
+    out = Path(output) if output is not None else project / "report" / "index.html"
+    if not out.is_absolute():
+        out = project / out
+    out = out.resolve()
+    if not out.is_relative_to(project):
+        raise ValueError("HTML 输出必须位于项目目录")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(body, encoding="utf-8")
     return out

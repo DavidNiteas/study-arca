@@ -1,9 +1,29 @@
 {
   "schema": "sa.experience-plan/1",
+  "artifact_id": "a-experience-plan-v1",
   "format": "html",
   "snapshot": "a-ir-v1",
   "title": "交互报告标题",
+  "version": "",
+  "as_of": "YYYY-MM-DD",
+  "project": "p-example",
+  "meta": [],
+  "sections": [],
+  "footnotes": {},
+  "sources": [],
+  "generated_from": "",
+  "layer_source": "",
   "navigation": [],
-  "sections": []
+  "controls": {
+    "search": true,
+    "layer_filters": ["all", "fact", "inference", "option"],
+    "citation_drawer": true,
+    "print": true
+  },
+  "source": {
+    "schema": "sa.document/1",
+    "path": "report/document.json",
+    "sha256": "sha256"
+  }
 }
 

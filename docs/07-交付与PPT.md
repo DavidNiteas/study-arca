@@ -25,6 +25,14 @@ python scripts/sa.py render build <project>   # Markdown → report/document.jso
 python scripts/sa.py render html <project>    # document.json → report/index.html
 ```
 
+独立 HTML 流程：
+
+```bash
+python scripts/sa.py experience convert <project> --source report/document.json --snapshot <artifact-id> --plan-id <artifact-id> --output <experience-plan.json>
+python scripts/sa.py experience validate <project> --plan <experience-plan.json>
+python scripts/sa.py experience build <project> --plan <experience-plan.json> --output <report.html>
+```
+
 特性：
 
 - 单文件、离线可开、无 CDN；图片内嵌 base64。
@@ -37,6 +45,14 @@ python scripts/sa.py render html <project>    # document.json → report/index.h
 
 ```bash
 python scripts/sa.py render docx <project>   # report/document.json → report/report.docx
+```
+
+独立 DOCX 流程：
+
+```bash
+python scripts/sa.py document convert <project> --source report/document.json --snapshot <artifact-id> --plan-id <artifact-id> --output <document-plan.json>
+python scripts/sa.py document validate <project> --plan <document-plan.json>
+python scripts/sa.py document build <project> --plan <document-plan.json> --output <report.docx>
 ```
 
 - 依赖 `python-docx`（optional extra）；缺失时给出安装提示，不静默失败。

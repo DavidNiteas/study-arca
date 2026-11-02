@@ -1,8 +1,22 @@
 {
   "schema": "sa.document-plan/1",
+  "artifact_id": "a-document-plan-v1",
   "format": "docx",
   "snapshot": "a-ir-v1",
   "title": "报告标题",
-  "sections": []
+  "version": "",
+  "as_of": "YYYY-MM-DD",
+  "project": "p-example",
+  "meta": [],
+  "sections": [],
+  "footnotes": {},
+  "sources": [],
+  "generated_from": "",
+  "layer_source": "",
+  "source": {
+    "schema": "sa.document/1",
+    "path": "report/document.json",
+    "sha256": "sha256"
+  }
 }
 

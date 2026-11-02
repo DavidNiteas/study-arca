@@ -309,7 +309,7 @@ def _setup_document(document):
     return doc
 
 
-def render_docx(project: Path, document: dict | None = None) -> Path:
+def render_docx(project: Path, document: dict | None = None, *, output: Path | str | None = None) -> Path:
     _require()
     project = project.resolve()
     if document is None:
@@ -381,7 +381,12 @@ def render_docx(project: Path, document: dict | None = None) -> Path:
                 _add_code(doc, block)
 
     _add_references(doc, document)
-    out = project / "report" / "report.docx"
+    out = Path(output) if output is not None else project / "report" / "report.docx"
+    if not out.is_absolute():
+        out = project / out
+    out = out.resolve()
+    if not out.is_relative_to(project):
+        raise ValueError("DOCX 输出必须位于项目目录")
     out.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(out))
     return out

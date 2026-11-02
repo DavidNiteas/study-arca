@@ -13,7 +13,7 @@ description: 在 Study Arca 项目中执行专业调研循环，接手研究问�
 2. 读项目 brief 与 project.json，运行 `python scripts/sa.py status <项目>`；存在 research/cycle.json 时再运行 `python scripts/sa.py cycle status <项目>`。旧项目没有研究循环时，按既有记录接手，不杜撰历史批准或复核。
 3. 围绕当前问题与后续任务执行。记录使用 `cycle capture` 冻结材料、`cycle apply --file <记录JSON>` 追加历史；语法见 docs/09，示例见 [records.example.json](../../../templates/research/records.example.json)。
    分析关键文献和综合结论时读[研究分析与论证](../../../docs/13-研究分析与论证.md)，解释研究问题、实验/对照、观察及推理桥梁，不能只列来源、年份和结论。阅读范围不足的细节标未知，不补造实验。
-4. 呈现任务按[PPT 设计方法与模式](../../../docs/11-PPT设计方法与模式.md)和[presentation-design 技能](../presentation-design/SKILL.md)先写设计意图、选择内容关系对应的模式，再验证渲染与图像读取能力；对目标软件生成的最终图片实际看图，再登记 visual_review。文字边界校验不替代看图，self 不冒充 independent。
+4. 输出按格式分流：DOCX 使用 `sa document convert|validate|build`，HTML 使用 `sa experience convert|validate|build`，PPT 按[PPT 设计方法与模式](../../../docs/11-PPT设计方法与模式.md)和[presentation-design 技能](../presentation-design/SKILL.md)执行。三者只消费冻结 Research Snapshot；旧 `sa render html/docx` 保留兼容。对目标软件生成的最终图片实际看图，再登记 review。文字边界校验不替代看图，self 不冒充 independent。
 5. 工作结束运行 `cycle lint` 和项目 `lint`，交接当前约定、轮次、任务 ID 与限制。研究轮次结束与正式发布分开。
 
 只在用户已授权的范围内推进；改变目标、受众或实质范围时记录修订提案。批准凭据是原话转录，不能自动证明人的身份，也不能把无回复当批准。
