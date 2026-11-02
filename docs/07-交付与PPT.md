@@ -54,6 +54,7 @@ python scripts/sa.py render docx <project>   # report/document.json → report/r
 - 使用 `gorden-ppt-skill` 时遵守其更新、字数与出框规则；模板仅供个人学习研究。
 - 当前项目级试点为农用杀菌剂演示 v7.2（30 页，内容/布局 LR、原生图解、PowerPoint 实际渲染与看图返修）；可迁移经验见 [案例](presentation/fungicide-diagrams.md)。项目产物留在独立仓，本路径不是框架内置资源。
 - 前一版：`v5.0` 为模板拼页版，保留对比；`sa render pptx` 尚未集成。
+- 通用 `sa deck convert|validate|build` 已提供 DeckPlan/RenderLayout 到原生 PPTX 的可复用路径；实际预览、测量与审查后端仍由呈现流程继续集成。
 
 ## 5. 交付物快照与发布
 

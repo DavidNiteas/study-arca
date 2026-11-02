@@ -1,8 +1,13 @@
 {
   "schema": "sa.deck-plan/1",
+  "artifact_id": "a-plan-v1",
   "format": "pptx",
   "snapshot": "a-ir-v1",
   "title": "演示标题",
+  "theme": {
+    "font": "Microsoft YaHei"
+  },
+  "texts": {},
   "slides": []
 }
 

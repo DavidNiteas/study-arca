@@ -245,6 +245,60 @@ def cmd_output(args) -> int:
     return 0
 
 
+def cmd_deck(args) -> int:
+    from .deck import build_pptx, convert_legacy_deck, validate_deck
+
+    project = Path(args.project).resolve()
+
+    def local(value: str) -> Path:
+        path = Path(value)
+        if not path.is_absolute():
+            path = project / path
+        path = path.resolve()
+        if not path.is_relative_to(project):
+            raise ProjectError("Deck 文件必须位于项目目录")
+        return path
+
+    if args.action == "convert":
+        if not all((args.content, args.layout, args.snapshot, args.plan_id, args.plan_out, args.layout_out)):
+            raise ProjectError("deck convert 需要 --content/--layout/--snapshot/--plan-id/--plan-out/--layout-out")
+        plan, layout = convert_legacy_deck(
+            project,
+            local(args.content),
+            local(args.layout),
+            snapshot=args.snapshot,
+            plan_id=args.plan_id,
+            title=args.title,
+        )
+        plan_path = local(args.plan_out)
+        layout_path = local(args.layout_out)
+        plan_path.parent.mkdir(parents=True, exist_ok=True)
+        layout_path.parent.mkdir(parents=True, exist_ok=True)
+        plan_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        layout_path.write_text(json.dumps(layout, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"已生成 DeckPlan：{plan_path}")
+        print(f"已生成 RenderLayout：{layout_path}")
+        return 0
+
+    if not args.plan or not args.layout:
+        raise ProjectError(f"deck {args.action} 需要 --plan 和 --layout")
+    plan_path = local(args.plan)
+    layout_path = local(args.layout)
+    plan = json.loads(plan_path.read_text(encoding="utf-8-sig"))
+    layout = json.loads(layout_path.read_text(encoding="utf-8-sig"))
+    if args.action == "validate":
+        errors = validate_deck(plan, layout)
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"Deck：{len(errors)} error")
+        return 1 if errors else 0
+    if not args.output:
+        raise ProjectError("deck build 需要 --output")
+    output = build_pptx(project, plan, layout, local(args.output))
+    print(f"已生成原生 PPTX：{output}")
+    return 0
+
+
 def cmd_render(args) -> int:
     project = Path(args.project)
     if args.action == "build":
@@ -599,6 +653,20 @@ def build_parser() -> argparse.ArgumentParser:
     output.add_argument("project")
     output.add_argument("--file")
     output.set_defaults(func=cmd_output)
+
+    deck = sub.add_parser("deck", help="DeckPlan/RenderLayout 转换、校验和原生 PPTX 编译")
+    deck.add_argument("action", choices=["convert", "validate", "build"])
+    deck.add_argument("project")
+    deck.add_argument("--content")
+    deck.add_argument("--layout")
+    deck.add_argument("--snapshot")
+    deck.add_argument("--plan-id")
+    deck.add_argument("--plan-out")
+    deck.add_argument("--layout-out")
+    deck.add_argument("--plan")
+    deck.add_argument("--output")
+    deck.add_argument("--title")
+    deck.set_defaults(func=cmd_deck)
 
     selftest = sub.add_parser("selftest", help="工具自身回归测试")
     selftest.set_defaults(func=cmd_selftest)
