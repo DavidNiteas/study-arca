@@ -247,6 +247,7 @@ def cmd_output(args) -> int:
 
 def cmd_deck(args) -> int:
     from .deck import build_pptx, convert_legacy_deck, validate_deck
+    from .preview import render_powerpoint, validate_preview
 
     project = Path(args.project).resolve()
 
@@ -279,6 +280,23 @@ def cmd_deck(args) -> int:
         print(f"已生成 DeckPlan：{plan_path}")
         print(f"已生成 RenderLayout：{layout_path}")
         return 0
+
+    if args.action == "preview":
+        if not args.pptx or not args.out_dir:
+            raise ProjectError("deck preview 需要 --pptx 和 --out-dir")
+        result = render_powerpoint(
+            local(args.pptx),
+            local(args.out_dir),
+            width=args.width,
+            height=args.height,
+            contact_per_sheet=args.contact_per_sheet,
+            contact_columns=args.contact_columns,
+        )
+        errors = validate_preview(local(args.out_dir), expected_slides=result["slides"])
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"已生成 PowerPoint 预览：{local(args.out_dir)}（{result['slides']} 页，overflow {len(result['overflow'])}）")
+        return 1 if errors else 0
 
     if not args.plan or not args.layout:
         raise ProjectError(f"deck {args.action} 需要 --plan 和 --layout")
@@ -654,8 +672,8 @@ def build_parser() -> argparse.ArgumentParser:
     output.add_argument("--file")
     output.set_defaults(func=cmd_output)
 
-    deck = sub.add_parser("deck", help="DeckPlan/RenderLayout 转换、校验和原生 PPTX 编译")
-    deck.add_argument("action", choices=["convert", "validate", "build"])
+    deck = sub.add_parser("deck", help="DeckPlan/RenderLayout 转换、校验、原生 PPTX 编译与预览")
+    deck.add_argument("action", choices=["convert", "validate", "build", "preview"])
     deck.add_argument("project")
     deck.add_argument("--content")
     deck.add_argument("--layout")
@@ -666,6 +684,12 @@ def build_parser() -> argparse.ArgumentParser:
     deck.add_argument("--plan")
     deck.add_argument("--output")
     deck.add_argument("--title")
+    deck.add_argument("--pptx")
+    deck.add_argument("--out-dir")
+    deck.add_argument("--width", type=int, default=2400)
+    deck.add_argument("--height", type=int, default=1350)
+    deck.add_argument("--contact-per-sheet", type=int, default=6)
+    deck.add_argument("--contact-columns", type=int, default=2)
     deck.set_defaults(func=cmd_deck)
 
     selftest = sub.add_parser("selftest", help="工具自身回归测试")

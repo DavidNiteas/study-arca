@@ -52,9 +52,10 @@ python scripts/sa.py render docx <project>   # report/document.json → report/r
 - **不设“建议页”**：改为“选项与条件页”——对称呈现路径、成立条件、代价、反证。
 - 默认依据 [设计方法与模式](11-PPT设计方法与模式.md) 原创构图，先写设计意图，再落布局 LR。用户明确采用模板时，再让用户看实际预览选择，不默认进入选模板流程。
 - 使用 `gorden-ppt-skill` 时遵守其更新、字数与出框规则；模板仅供个人学习研究。
-- 当前项目级试点为农用杀菌剂演示 v7.2（30 页，内容/布局 LR、原生图解、PowerPoint 实际渲染与看图返修）；可迁移经验见 [案例](presentation/fungicide-diagrams.md)。项目产物留在独立仓，本路径不是框架内置资源。
-- 前一版：`v5.0` 为模板拼页版，保留对比；`sa render pptx` 尚未集成。
-- 通用 `sa deck convert|validate|build` 已提供 DeckPlan/RenderLayout 到原生 PPTX 的可复用路径；实际预览、测量与审查后端仍由呈现流程继续集成。
+- 当前项目级试点为农用杀菌剂演示 v11.1（67 页，DeckPlan/RenderLayout、原生图解、PowerPoint 实际预览与看图返修）；可迁移经验见 [案例](presentation/fungicide-diagrams.md)。项目产物留在独立仓，本路径不是框架内置资源。
+- 前一版：`v5.0` 为模板拼页版，保留对比。旧 `sa render pptx` 入口仍不提供；PPT 统一走独立 Deck 流程。
+- 通用 `sa deck convert|validate|build` 已提供 DeckPlan/RenderLayout 到原生 PPTX 的可复用路径。
+- `sa deck preview` 可选调用本机 PowerPoint 导出逐页 PNG、PDF、文字溢出测量、联系表和全篇总览；核心编译不依赖 PowerPoint COM。
 
 ## 5. 交付物快照与发布
 
@@ -99,4 +100,4 @@ publish/                       # 对外发布层，接收方只看这里
 
 ## 8. 新研究循环的呈现绑定
 
-按 [09](09-专业调研循环.md) capture 冻结内容、布局、输出和实际预览，再登记 presentation，绑定约定与轮次。visual_review 区分 pending/passed/failed 以及 self/independent。真实看图是视觉通过的前置条件。首页与分簇试验支持布局 LR 到原生 PPT、PowerPoint PNG 和视觉返修；通用 sa render pptx 尚未集成，不将实验能力写成已完成的跨媒介渲染器。
+按 [09](09-专业调研循环.md) 冻结 Research Snapshot，再登记独立 output。PPT 使用 DeckPlan/RenderLayout 原生编译；预览通过 `sa deck preview` 生成逐页图、PDF、测量和联系表。`review` 作为追加事件绑定实际预览 artifact，区分 pending/passed/failed 以及 self/independent。机器测量只能证明产物完整和文字溢出等事实；真实看图仍是视觉通过的前置条件，失败与返修记录不得覆盖。

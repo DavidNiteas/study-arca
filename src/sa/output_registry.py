@@ -178,12 +178,18 @@ def validate_registry(project: Path | str, data: dict) -> list[str]:
             if output_id not in outputs:
                 errors.append(f"{record_id}.output 必须引用前序 output")
             status = record.get("status")
+            preview_id = record.get("preview")
+            if preview_id is not None:
+                if not isinstance(preview_id, str) or not preview_id.strip():
+                    errors.append(f"{record_id}.preview 必须是非空 artifact ID")
+                elif preview_id not in artifacts:
+                    errors.append(f"{record_id}.preview 不是已冻结 artifact：{preview_id}")
             if status not in ("pending", "passed", "failed"):
                 errors.append(f"{record_id}.status 非法")
             elif status in ("passed", "failed"):
                 output = outputs.get(output_id, {})
-                if not output.get("preview"):
-                    errors.append(f"{record_id} 需要 output.preview")
+                if not preview_id and not output.get("preview"):
+                    errors.append(f"{record_id} 需要 review.preview（旧记录可用 output.preview 兼容）")
                 if record.get("reviewed") is not True:
                     errors.append(f"{record_id}.reviewed 必须为 true")
                 if record.get("mode") not in ("self", "independent"):
@@ -286,7 +292,7 @@ def output_status(project: Path | str) -> dict:
             "format": record["format"],
             "snapshot": record["snapshot"],
             "artifact": record["artifact"],
-            "preview": record.get("preview"),
+            "preview": review.get("preview") if review and review.get("preview") else record.get("preview"),
             "review": review.get("status") if review else "pending",
         })
     return {

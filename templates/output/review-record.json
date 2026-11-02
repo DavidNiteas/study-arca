@@ -4,6 +4,7 @@
   "output": "o-pptx-1",
   "status": "passed",
   "reviewed": true,
+  "preview": "a-preview-v1",
   "mode": "self",
   "reviewer": "researcher",
   "notes": "已实际阅读/查看输出并记录问题。"

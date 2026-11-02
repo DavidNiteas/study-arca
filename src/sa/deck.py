@@ -87,6 +87,7 @@ def convert_legacy_deck(
     canvas = layout.get("canvas", [1600, 900])
     plan = {
         "schema": PLAN_SCHEMA,
+        "artifact_id": plan_id,
         "format": "pptx",
         "snapshot": snapshot,
         "title": title or content.get("title") or project.name,
@@ -154,6 +155,8 @@ def validate_deck(plan: dict, layout: dict) -> list[str]:
     errors: list[str] = []
     if plan.get("schema") != PLAN_SCHEMA:
         errors.append(f"deck plan schema 必须是 {PLAN_SCHEMA}")
+    if not isinstance(plan.get("artifact_id"), str) or not plan["artifact_id"].strip():
+        errors.append("deck plan artifact_id 必须是非空 artifact ID")
     if plan.get("format") != "pptx":
         errors.append("deck plan format 必须是 pptx")
     texts = plan.get("texts")
