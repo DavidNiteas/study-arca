@@ -20,6 +20,7 @@ REQUIRED_DIRS = [
     "analysis/datasets",
     "analysis/notes",
     "analysis/findings",
+    "analysis/research-ir",
     "report",
     "deliverables/report",
     "deliverables/deck",

@@ -169,6 +169,48 @@ def cmd_cycle(args) -> int:
     return 0
 
 
+def cmd_research_ir(args) -> int:
+    from .research_ir import (
+        build_research_ir,
+        snapshot_research_ir,
+        validate_research_ir,
+        write_research_ir,
+    )
+
+    project = Path(args.project)
+    if args.action == "build":
+        data = build_research_ir(project, revision=args.revision)
+        out = write_research_ir(project, data, output=args.output or None)
+        counts = data["assertions"]
+        print(
+            f"已生成 Research IR：{out}"
+            f"（claims {len(counts['claims'])} / facts {len(counts['facts'])}"
+            f" / conflicts {len(counts['conflicts'])}）"
+        )
+        return 0
+    if args.action == "validate":
+        source = Path(args.file) if args.file else project / "analysis/research-ir" / f"{args.revision}.json"
+        if not source.is_absolute():
+            source = project / source
+        if not source.is_file():
+            print(f"[ERROR] Research IR 不存在：{source}", file=sys.stderr)
+            return 2
+        data = json.loads(source.read_text(encoding="utf-8"))
+        errors = validate_research_ir(project, data, verify_sources=args.check_sources)
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"Research IR：{len(errors)} error")
+        return 1 if errors else 0
+    artifact_id = snapshot_research_ir(
+        project,
+        revision=args.revision,
+        artifact_id=args.id,
+        label=args.label,
+    )
+    print(f"已冻结 Research IR：{artifact_id}")
+    return 0
+
+
 def cmd_render(args) -> int:
     project = Path(args.project)
     if args.action == "build":
@@ -502,6 +544,21 @@ def build_parser() -> argparse.ArgumentParser:
     cycle.add_argument("--id")
     cycle.add_argument("--label")
     cycle.set_defaults(func=cmd_cycle)
+
+    research_ir = sub.add_parser("research-ir", help="生成、校验或冻结 Research IR")
+    research_ir.add_argument("action", choices=["build", "validate", "snapshot"])
+    research_ir.add_argument("project")
+    research_ir.add_argument("--revision", default="current")
+    research_ir.add_argument("--file", default=None)
+    research_ir.add_argument("--output", default=None)
+    research_ir.add_argument("--id", default=None)
+    research_ir.add_argument("--label", default=None)
+    research_ir.add_argument(
+        "--check-sources",
+        action="store_true",
+        help="同时校验当前来源和内容文件哈希",
+    )
+    research_ir.set_defaults(func=cmd_research_ir)
 
     selftest = sub.add_parser("selftest", help="工具自身回归测试")
     selftest.set_defaults(func=cmd_selftest)
