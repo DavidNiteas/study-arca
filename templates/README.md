@@ -10,6 +10,7 @@
 | [report/](report/) | Markdown 报告初稿结构 |
 | [ppt/](ppt/) | PPT 大纲、设计意图、设计案例记录 |
 | [research/](research/) | 关键论文分析与研究循环记录样例 |
+| [output/](output/) | 输出请求、三种 Output Plan、Render Layout 与登记记录样例 |
 
 ## 规则
 

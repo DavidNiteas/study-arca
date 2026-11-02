@@ -1,0 +1,10 @@
+{
+  "schema": "sa.output-request/1",
+  "format": "pptx",
+  "snapshot": "a-ir-v1",
+  "audience": "目标读者",
+  "purpose": "输出目的",
+  "as_of": "YYYY-MM-DD",
+  "requirements": []
+}
+

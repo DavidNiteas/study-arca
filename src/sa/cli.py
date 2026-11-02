@@ -211,6 +211,40 @@ def cmd_research_ir(args) -> int:
     return 0
 
 
+def cmd_output(args) -> int:
+    from .output_registry import (
+        apply_records,
+        init_registry,
+        load_registry,
+        output_status,
+        validate_registry,
+    )
+
+    project = Path(args.project)
+    if args.action == "init":
+        print(init_registry(project))
+    elif args.action == "apply":
+        if not args.file:
+            raise ProjectError("output apply 需要 --file JSON 记录文件")
+        source = Path(args.file)
+        if not source.is_absolute():
+            source = project / source
+        if not source.is_file():
+            raise ProjectError(f"输出记录文件不存在：{source}")
+        value = json.loads(source.read_text(encoding="utf-8"))
+        print(f"已追加 {apply_records(project, value)} 条输出记录")
+    elif args.action == "lint":
+        data = load_registry(project)
+        errors = validate_registry(project, data)
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"输出登记：{len(errors)} error")
+        return 1 if errors else 0
+    else:
+        print(json.dumps(output_status(project), ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_render(args) -> int:
     project = Path(args.project)
     if args.action == "build":
@@ -559,6 +593,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="同时校验当前来源和内容文件哈希",
     )
     research_ir.set_defaults(func=cmd_research_ir)
+
+    output = sub.add_parser("output", help="独立输出登记：DOCX、HTML 和 PPT")
+    output.add_argument("action", choices=["init", "apply", "status", "lint"])
+    output.add_argument("project")
+    output.add_argument("--file")
+    output.set_defaults(func=cmd_output)
 
     selftest = sub.add_parser("selftest", help="工具自身回归测试")
     selftest.set_defaults(func=cmd_selftest)

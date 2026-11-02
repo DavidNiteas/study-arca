@@ -1,0 +1,11 @@
+{
+  "id": "rv-pptx-1",
+  "type": "review",
+  "output": "o-pptx-1",
+  "status": "passed",
+  "reviewed": true,
+  "mode": "self",
+  "reviewer": "researcher",
+  "notes": "已实际阅读/查看输出并记录问题。"
+}
+

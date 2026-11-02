@@ -1,0 +1,15 @@
+{
+  "id": "o-pptx-1",
+  "type": "output",
+  "format": "pptx",
+  "agreement": "b-1",
+  "round": "r-1",
+  "snapshot": "a-ir-v1",
+  "request": "a-request-v1",
+  "plan": "a-plan-v1",
+  "layout": "a-layout-v1",
+  "artifact": "a-pptx-v1",
+  "preview": "a-preview-v1",
+  "renderer": "PowerPoint"
+}
+

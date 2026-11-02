@@ -22,6 +22,7 @@ REQUIRED_DIRS = [
     "analysis/findings",
     "analysis/research-ir",
     "report",
+    "outputs",
     "deliverables/report",
     "deliverables/deck",
 ]
@@ -118,6 +119,8 @@ def new_project(
         save_json(dest / "project.json", meta)
         from .cycle import init_cycle
         init_cycle(dest)
+        from .output_registry import init_registry
+        init_registry(dest)
     (dest / "search" / "queries.jsonl").touch()
     if git:
         _init_git(dest, project_id)
