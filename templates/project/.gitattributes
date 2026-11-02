@@ -1,0 +1,2 @@
+# Frozen artifacts are hashed as bytes; Git must not convert their line endings.
+research/artifacts/** -text

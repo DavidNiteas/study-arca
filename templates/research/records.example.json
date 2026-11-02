@@ -1,0 +1,8 @@
+﻿[
+  {
+    "id": "brief-001", "type": "agreement", "question": "本次研究要回答什么？",
+    "purpose": "填写用途", "audience": "填写读者", "scope": "填写范围", "out_of_scope": [],
+    "as_of": "2026-10-26", "acceptance": ["填写回答标准"], "status": "draft"
+  },
+  {"id": "question-001", "type": "question", "agreement": "brief-001", "text": "具体子问题"}
+]

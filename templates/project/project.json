@@ -1,0 +1,17 @@
+{
+  "id": "{{ID}}",
+  "title": "{{TITLE}}",
+  "status": "scoping",
+  "created": "{{DATE}}",
+  "as_of": "{{DATE}}",
+  "stale_days": 180,
+  "owner": "",
+  "requester": "",
+  "deadline": null,
+  "deliverables": ["report"],
+  "question": "",
+  "out_of_scope": [],
+  "acceptance": [],
+  "review_level": "L1",
+  "gate_waivers": []
+}

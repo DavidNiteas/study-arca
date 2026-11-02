@@ -1,0 +1,9 @@
+{
+  "schema": "sa.document/1",
+  "project": "{{ID}}",
+  "title": "{{TITLE}}",
+  "version": "v0.1",
+  "as_of": "{{DATE}}",
+  "layers": ["fact", "inference", "option"],
+  "sections": []
+}
