@@ -43,6 +43,9 @@ study-arca/
 - [`docs/01-调研治理.md`](docs/01-调研治理.md)
 - [`docs/09-专业调研循环.md`](docs/09-专业调研循环.md)
 - [`docs/10-代理工作协议.md`](docs/10-代理工作协议.md)
+- [`docs/14-产品组件与资产.md`](docs/14-产品组件与资产.md)
+- [代理技能索引](.agents/README.md)
+- [模板索引](templates/README.md)
 
 ## 版本与发布
 

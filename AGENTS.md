@@ -15,6 +15,7 @@
 | 写报告 | `docs/05-报告规范.md` |
 | 出 PPT 或交付 | `docs/07-交付与PPT.md`、`docs/11-PPT设计方法与模式.md` |
 | 理解能力边界 | `docs/12-系统定位与能力管理.md` |
+| 理解技能、模板、规范与代码的分工 | `docs/14-产品组件与资产.md`、`.agents/README.md`、`templates/README.md` |
 
 ## 中立性
 
@@ -47,7 +48,7 @@ python scripts/sa.py lint <project-dir>
 
 ## 可用技能
 
-- `research-cycle`：专业研究入口，见 `.agents/skills/research-cycle/SKILL.md`。
-- `presentation-design`：研究 PPT 的设计、渲染、读图与返修，见 `.agents/skills/presentation-design/SKILL.md`。
+- `research-cycle`：专业研究入口，见 `.agents/skills/research-cycle/SKILL.md`；组件关系见 `docs/14-产品组件与资产.md`。
+- `presentation-design`：研究 PPT 的设计、渲染、读图与返修，见 `.agents/skills/presentation-design/SKILL.md`；模板入口见 `templates/README.md`。
 - `engineering-governance`：开发仓中的工单与角色模型；发布仓的研究项目不自动套用工程工单。
 
