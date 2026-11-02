@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-03T00:20:21+08:00",
+  "generated_at": "2026-11-03T00:54:41+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "3963ebf4ce38ded1ebc153d107b723ab43c4e2b5"
+    "commit": "49ef8da630bf6aec97d3ffd117572458a1d55983"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "52b47663d9695b5b9aae2752135318e1d34f1c63"
+    "commit": "0933e2a477b7209d834ff9a5f0e83de95740a1aa"
   },
-  "tree_sha256": "80836a6677a1dcb4557caa3ea9f9b922321f6c2996309d072421651a4b58e58d",
+  "tree_sha256": "6e47059f35365fb07336bb898eb21bcc2355a403d6af92607839af5e5668e115",
   "files": {
     ".agents/README.md": "2bc0e959ed78f6b1e0f3e1a3482d74d26faccd5e32a47a28cd06219cadaca2db",
     ".agents/skills/presentation-design/SKILL.md": "322adde6d5fc3d63709ec0c9609e4f9599b059e41673912dee2f6ca94f2029af",
@@ -49,7 +49,7 @@
     "src/sa/cli.py": "ab3bf5d88c8f4db0dc972dc800971f2e69e48c835caf310182a6c0bfb6fe8e18",
     "src/sa/cycle.py": "d2f027c07a855414eddb7835b8df6384001b2a5581a37b8538178f475713a899",
     "src/sa/deck.py": "761d14adda32261cd11a0bd6b3326b6ae8a08f597b505bc7137a6b5b9843c389",
-    "src/sa/docx_render.py": "8e3c02b15fd0c662c4c85cdb37001c8da7d99695c1ddf8a914c837bfe3f48c34",
+    "src/sa/docx_render.py": "eb780dd7a6db8f5965c03f07b278b605e2ff47764d369c5c1ea594adb08a408d",
     "src/sa/evidence.py": "5fb8076a119b568df073286e58e88c2dcb2b9c89de1a6233835a1462e51d6154",
     "src/sa/output_registry.py": "e36ae51e72e8c22f63b87f684edfb18a3a9ed2f53df78484c3c648e86c337756",
     "src/sa/preview.py": "b9f02e4be04e49b43f040b4cc1e2b513f3c02bf1f55e8fc113b4ad032540c7c1",

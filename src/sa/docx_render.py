@@ -27,6 +27,8 @@ class RenderDependencyError(RuntimeError):
 BODY_FONT = "宋体"
 HEAD_FONT = "微软雅黑"
 MONO_FONT = "Consolas"
+FIGURE_MAX_WIDTH_CM = 16
+FIGURE_MAX_HEIGHT_CM = 9.5
 INK = RGBColor(0x1F, 0x29, 0x37)
 MUTED = RGBColor(0x6B, 0x72, 0x80)
 FACT = RGBColor(0x2F, 0x5D, 0x8A)
@@ -113,7 +115,7 @@ def _toc(doc):
     begin.set(qn("w:fldCharType"), "begin")
     instr = OxmlElement("w:instrText")
     instr.set(qn("xml:space"), "preserve")
-    instr.text = 'TOC \\o "1-3" \\h \\z \\u'
+    instr.text = 'TOC \\o "1-2" \\h \\z \\u'
     separate = OxmlElement("w:fldChar")
     separate.set(qn("w:fldCharType"), "separate")
     text = OxmlElement("w:t")
@@ -202,7 +204,14 @@ def _add_table(doc, block):
     doc.add_paragraph()
 
 
-def _add_figure(doc, block, project):
+def _caption_context(text: str, fallback: str = "示意") -> str:
+    value = re.sub(r"\[\^[^\]]+\]", "", str(text or ""))
+    value = value.replace("**", "").strip()
+    value = re.split(r"[\n。：:]", value, maxsplit=1)[0].strip()
+    return value[:60] or fallback
+
+
+def _add_figure(doc, block, project, fallback_caption="示意"):
     path = (project / block["src"]).resolve()
     if not path.exists():
         paragraph = doc.add_paragraph()
@@ -211,11 +220,17 @@ def _add_figure(doc, block, project):
         return
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph.paragraph_format.keep_with_next = True
     run = paragraph.add_run()
-    run.add_picture(str(path), width=Cm(16))
+    from PIL import Image
+
+    with Image.open(path) as image:
+        aspect = image.height / image.width
+    width_cm = min(FIGURE_MAX_WIDTH_CM, FIGURE_MAX_HEIGHT_CM / aspect)
+    run.add_picture(str(path), width=Cm(width_cm))
     caption = doc.add_paragraph()
     caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    label = block.get("caption", "") or "图"
+    label = block.get("caption", "") or fallback_caption or "示意"
     run = caption.add_run(f"图 · {label}")
     _set_run_font(run, BODY_FONT, 9, False, MUTED)
 
@@ -265,6 +280,7 @@ def _style_heading(paragraph, level):
         _set_run_font(run, HEAD_FONT, size, True, INK)
     paragraph.paragraph_format.space_before = Pt(12 if level <= 2 else 8)
     paragraph.paragraph_format.space_after = Pt(6)
+    paragraph.paragraph_format.keep_with_next = True
 
 
 def _setup_document(document):
@@ -352,16 +368,23 @@ def render_docx(project: Path, document: dict | None = None, *, output: Path | s
         heading = doc.add_heading(section.get("title", ""), level=min(level, 4))
         _style_heading(heading, level)
 
-        for block in section.get("blocks", []):
+        context_label = _caption_context(section.get("title", ""), "章节")
+        blocks = section.get("blocks", [])
+        for block_index, block in enumerate(blocks):
             kind = block.get("type")
             layer = block.get("layer", "fact")
             if kind == "heading":
                 heading = doc.add_heading(block.get("text", ""), level=min(block.get("level", 3), 4))
                 _style_heading(heading, block.get("level", 3))
+                context_label = _caption_context(block.get("text", ""), context_label)
             elif kind == "paragraph":
                 paragraph = doc.add_paragraph()
                 _prefix_badge(paragraph, layer)
                 _add_inline(paragraph, block.get("text", ""))
+                next_kind = blocks[block_index + 1].get("type") if block_index + 1 < len(blocks) else None
+                if next_kind == "figure":
+                    paragraph.paragraph_format.keep_with_next = True
+                context_label = _caption_context(block.get("text", ""), context_label)
             elif kind == "callout":
                 _add_callout(doc, block, layer)
             elif kind == "list":
@@ -376,7 +399,7 @@ def render_docx(project: Path, document: dict | None = None, *, output: Path | s
                     _badge(doc, layer)
                 _add_table(doc, block)
             elif kind == "figure":
-                _add_figure(doc, block, project)
+                _add_figure(doc, block, project, context_label)
             elif kind == "code":
                 _add_code(doc, block)
 
