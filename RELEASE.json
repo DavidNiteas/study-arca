@@ -1,13 +1,17 @@
 {
-  "schema": "sa.release/1",
+  "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-02T22:27:12+08:00",
-  "source": {
+  "generated_at": "2026-11-02T22:38:46+08:00",
+  "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "247644b470198b7c99bc146b68ee101b49cd58e4",
-    "worktree_dirty": true
+    "commit": "247644b470198b7c99bc146b68ee101b49cd58e4"
+  },
+  "product_state": {
+    "repository": "study-arca",
+    "branch": "main",
+    "commit": "2c6f565f940d12dcdfbead666c2b52becedc24a8"
   },
   "tree_sha256": "f04c26191bfe7e07d66632a9929d60c6386eb6a24a69c49e6a01173decaa2545",
   "files": {
@@ -70,5 +74,6 @@
     "templates/research/paper-analysis.md": "59dc695f832f0b1c1bad6303812aaea6634395784ee53644c55d2e6488b7f243",
     "templates/research/records.example.json": "8781ceb8ec5de2b563457fb2b529c4f0a20d36602f7e0dab2c006b5da8a70ee8",
     "workspace/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  }
+  },
+  "note": "workspace contains independent research repositories and is excluded from manifest hashes"
 }
