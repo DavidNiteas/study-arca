@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-02T22:40:52+08:00",
+  "generated_at": "2026-11-02T23:04:35+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "bcd8c431e0a892734e60321a013a7eace600d981"
+    "commit": "a32358a061dbec5034f51468c077a6308d18aa8c"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "7363141b268285eb9bbcc5384656cb502049b252"
+    "commit": "7d38138681f2ed9bf6770aba1bd04224036e5d50"
   },
-  "tree_sha256": "f04c26191bfe7e07d66632a9929d60c6386eb6a24a69c49e6a01173decaa2545",
+  "tree_sha256": "7cbf3dfdc9648e6e9e0bf4173951e05ac311684bfef05400a4d8138ec56370dd",
   "files": {
     ".agents/skills/presentation-design/SKILL.md": "6f279865ce6fc018ae00baeb049c65bcaf3b88314343138045774c51a72dea80",
     ".agents/skills/research-cycle/SKILL.md": "b5ffb3665bef204494c7a1251e438e9734c7e7dea8b0c8b6fc0d77e3d611b246",
@@ -21,7 +21,8 @@
     ".gitignore": "b0ccabc256643c5224cb68e20ab0bb06e19e91c803336d543b87fdee4e2b51b4",
     "AGENTS.md": "6a259b22dbf1aced9fe33e975154e3aee5289c0008503d5b0fe339367bab0708",
     "HANDOVER.md": "a3b159e4555b73644fc6fdae49d7809428ad2ff51ac73ec6b021646f85dc2065",
-    "README.md": "cc508fa0c50695e2995e37e864d3b0e8259c2d80fa65ee39247081f09e97d026",
+    "LICENSE": "c8bc8cd66076ca949cff00108295172db43ddf9c8c606e5e60f2677d19222f6c",
+    "README.md": "68fa549721a819ffffdfd722ee3de6c5b14f932313f0b9a520104758c209d543",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/01-调研治理.md": "ee3e72ec757436d52e1b752120dad74ba496d8cd29699d1aa85f62ffe6734121",
     "docs/02-项目布局.md": "f15efa6a569bd1cf299582332fc83215ac1f11fdb55887d71e2e28502d3bd781",
@@ -42,7 +43,7 @@
     "docs/presentation/README.md": "dd8ecc1cc9a2e4b73b3ea9e1666564a17a8707f9e5fd7a7095c9b32085aac7e2",
     "docs/presentation/fungicide-diagrams.md": "248412e8f76f3dfa370db7e5b7a863d209eeeaae828b0ffc563e614feab3da65",
     "scripts/sa.py": "b0719283a712c4db43e2cc002ce7ddf0ee06a457406aae1bff4f969e4a7796df",
-    "src/sa/__init__.py": "4167148bc306047b9766d16cc4c64138035c11cb055b865defc2b00481bbc3c9",
+    "src/sa/__init__.py": "3617a5e47a55b6c34fd4c114434d03ca8d59ab99b715e840140f5e762a0e4c64",
     "src/sa/cli.py": "5e750321391ca0c93e2901efb524adf2d642e62d1580627b4e70765efe48d99a",
     "src/sa/cycle.py": "d2f027c07a855414eddb7835b8df6384001b2a5581a37b8538178f475713a899",
     "src/sa/docx_render.py": "ec92d2e86e8588841401141b71a5ec6324c3e325ce9430b3a9b567a60b6a7ce7",

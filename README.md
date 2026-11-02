@@ -30,6 +30,7 @@ study-arca/
 ├── templates\           # 项目、报告和研究模板
 ├── .agents\skills\      # 代理执行入口
 ├── workspace\           # 独立研究项目工作区
+├── LICENSE
 ├── README.md
 ├── AGENTS.md
 ├── HANDOVER.md
@@ -45,7 +46,13 @@ study-arca/
 
 ## 版本与发布
 
-本仓库是发布快照，不作为日常开发工作区。版本、生成时间和来源开发提交记录在 [`RELEASE.json`](RELEASE.json)。修改研究规范、工具或技能应进入开发仓完成，再重新生成发布快照。
+本仓库是 Study Arca 的产品主仓。开发治理、内部工单和回归测试位于同级的 `study-arca-dev` 开发仓；产品源码、公开规范、模板和技能在本仓维护。版本与文件完整性记录在 [`RELEASE.json`](RELEASE.json)。
 
-研究项目及其证据、分析和交付物保存在各自的 `workspace/p-*` 仓库中，不隶属于本发布仓。
+研究项目及其证据、分析和交付物保存在各自的 `workspace/p-*` 仓库中，不进入本产品仓的 Git 历史。
+
+## 许可证
+
+Study Arca 产品代码、规范、模板和技能采用 [MIT License](LICENSE)。
+
+`workspace/` 中的研究项目可能包含第三方材料或单独的许可条款；其许可应分别在对应项目仓库内核验，不因本仓采用 MIT 而自动变更。
 
