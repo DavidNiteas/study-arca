@@ -6,26 +6,12 @@ import json
 import re
 import shutil
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROJECT_TEMPLATE = REPO_ROOT / "templates" / "project"
-
-REQUIRED_DIRS = [
-    "brief",
-    "_dev",
-    "search",
-    "tools",
-    "analysis/datasets",
-    "analysis/notes",
-    "analysis/findings",
-    "analysis/research-ir",
-    "report",
-    "outputs",
-    "deliverables/report",
-    "deliverables/deck",
-]
 
 TEXT_SUFFIXES = {".md", ".json", ".jsonl", ".txt", ".yaml", ".yml"}
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -39,6 +25,16 @@ EVIDENCE_GRADES = {"E1", "E2", "E3", "E4"}
 
 class ProjectError(Exception):
     pass
+
+
+def workspace_root() -> Path:
+    work_root = REPO_ROOT / "work-root"
+    legacy = REPO_ROOT / "workspace"
+    if work_root.is_dir():
+        return work_root
+    if legacy.is_dir():
+        return legacy
+    return work_root
 
 
 def _now() -> datetime:
@@ -74,16 +70,22 @@ def new_project(
     date: str | None = None,
     git: bool = True,
     workflow: str = "legacy",
+    workspace_type: str = "research",
 ) -> Path:
     if workflow not in {"legacy", "cycle"}:
         raise ProjectError("workflow 必须是 legacy/cycle")
+    from .workspace import SCHEMA, WORKSPACE_TYPES, WORKFLOW_BY_TYPE, required_dirs
+    if workspace_type not in WORKSPACE_TYPES:
+        raise ProjectError(f"workspace_type 必须是 {sorted(WORKSPACE_TYPES)}")
+    if workspace_type == "synthesis" and workflow == "legacy":
+        raise ProjectError("synthesis 工作区不能使用 legacy workflow")
     if not SLUG_RE.match(slug):
         raise ProjectError("slug 只能是小写字母/数字/连字符，且以字母或数字开头")
     now = _now()
     day = date or now.strftime("%Y-%m-%d")
     compact = day.replace("-", "")
     project_id = f"p-{compact}-{slug}"
-    root_path = Path(root) if root else REPO_ROOT / "workspace"
+    root_path = Path(root) if root else workspace_root()
     dest = root_path / project_id
     if dest.exists():
         raise ProjectError(f"目录已存在：{dest}")
@@ -91,7 +93,14 @@ def new_project(
         raise ProjectError(f"找不到模板：{PROJECT_TEMPLATE}")
 
     root_path.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(PROJECT_TEMPLATE, dest, ignore=shutil.ignore_patterns("_dev") if workflow == "cycle" else None)
+    modern = workflow == "cycle" or workspace_type == "synthesis"
+    ignore = shutil.ignore_patterns("_dev") if modern else None
+    shutil.copytree(PROJECT_TEMPLATE, dest, ignore=ignore)
+    if workspace_type == "synthesis":
+        for rel in ("search", "analysis"):
+            path = dest / rel
+            if path.exists():
+                shutil.rmtree(path)
 
     replacements = {
         "{{ID}}": project_id,
@@ -106,28 +115,72 @@ def new_project(
                 text = text.replace(key, value)
             path.write_text(text, encoding="utf-8")
 
-    for rel in REQUIRED_DIRS:
-        if workflow == "cycle" and rel == "_dev":
-            continue
+    for rel in required_dirs(workspace_type, modern=modern):
         _ensure_keep(dest / rel)
-    if workflow == "cycle":
+    if modern:
         meta = load_json(dest / "project.json")
-        meta["workflow"] = "sa.research/1"
+        meta["schema"] = SCHEMA
+        meta["workspace_type"] = workspace_type
+        meta["workflow"] = WORKFLOW_BY_TYPE[workspace_type]
         meta["status"] = "active"
         for field in ("gate_waivers", "question", "out_of_scope", "acceptance"):
             meta.pop(field, None)
         save_json(dest / "project.json", meta)
-        from .cycle import init_cycle
-        init_cycle(dest)
+        if workspace_type == "research":
+            from .cycle import init_cycle
+            init_cycle(dest)
+        else:
+            from .synthesis import init_synthesis
+            init_synthesis(dest)
         from .output_registry import init_registry
         init_registry(dest)
-    (dest / "search" / "queries.jsonl").touch()
+    if workspace_type == "research":
+        (dest / "search" / "queries.jsonl").touch()
     if git:
-        _init_git(dest, project_id)
+        _init_git(dest, project_id, workspace_type)
     return dest
 
 
-def _init_git(dest: Path, project_id: str) -> None:
+def init_existing_project(
+    destination: Path | str,
+    project_id: str,
+    title: str,
+    *,
+    date: str,
+    workspace_type: str = "research",
+    git: bool = True,
+) -> Path:
+    """Initialize an existing empty directory with a standard workspace skeleton."""
+    destination = Path(destination).resolve()
+    if not PROJECT_ID_RE.fullmatch(project_id):
+        raise ProjectError("项目 id 必须是 p-YYYYMMDD-slug")
+    compact = date.replace("-", "")
+    prefix = f"p-{compact}-"
+    if not project_id.startswith(prefix) or len(project_id) == len(prefix):
+        raise ProjectError("项目 id 日期必须与 --date 一致")
+    slug = project_id[len(prefix):]
+    if destination.exists() and (not destination.is_dir() or any(destination.iterdir())):
+        raise ProjectError(f"目标目录必须是空目录：{destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".sa-project-init-", dir=destination.parent) as tmp:
+        generated = new_project(
+            slug,
+            title,
+            root=tmp,
+            date=date,
+            git=False,
+            workflow="cycle",
+            workspace_type=workspace_type,
+        )
+        destination.mkdir(parents=True, exist_ok=True)
+        for child in generated.iterdir():
+            shutil.move(str(child), str(destination / child.name))
+    if git:
+        _init_git(destination, project_id, workspace_type)
+    return destination
+
+
+def _init_git(dest: Path, project_id: str, workspace_type: str = "research") -> None:
     """项目级独立仓库：每个调研一个 git，互不共享历史。"""
     import subprocess
 
@@ -147,7 +200,13 @@ def _init_git(dest: Path, project_id: str) -> None:
         return
     subprocess.run(["git", "add", "-A"], cwd=dest, check=True)
     subprocess.run(
-        ["git", "commit", "-q", "-m", f"chore: 初始化调研项目 {project_id}"],
+        [
+            "git",
+            "commit",
+            "-q",
+            "-m",
+            f"chore: 初始化{'总结' if workspace_type == 'synthesis' else '调研'}工作区 {project_id}",
+        ],
         cwd=dest,
         check=True,
     )

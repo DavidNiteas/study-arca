@@ -1,6 +1,10 @@
 # 每个研究项目是独立仓库
 workspace/*
 !workspace/.gitkeep
+work-root/
+
+# 当前用户的本地方言；不进入产品历史或发布包
+/dialect/
 
 # Python
 __pycache__/

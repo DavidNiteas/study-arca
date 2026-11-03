@@ -1,0 +1,8 @@
+# Generated program views
+index.json
+
+# Local caches
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

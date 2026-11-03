@@ -89,12 +89,23 @@ publish/                       # 对外发布层，接收方只看这里
 │   ├── 03-交互报告.html
 │   └── manifest.json
 ├── release/                   # 最新版整目录副本（稳定入口）
-└── p-<project>-v1.0.zip        # 按版本打包
+└── packed/                    # 用户明确要求后才生成压缩包
+    └── p-<project>-v1.0.zip
 ```
 
 - `publish/vX.Y/` 是**对外交付层**：文件名带序号与中文用途，三份文件复制自冻结快照，哈希必须与源文件一致。
 - `publish/release/` 始终等于当前最新版本目录，**整目录复制、不用符号链接**，保证复制、压缩、跨机器打开都不失效。
-- 每个版本另出 `p-<project>-vX.Y.zip`（UTF-8 文件名，解压为单层目录），便于邮件/IM 发送。
+- **完成报告或版本发布不等于自动生成 zip。** 只有用户明确要求打包时，才执行：
+
+  ```powershell
+  python scripts/sa.py pack <project> --version vX.Y
+  ```
+
+- 压缩包只落在 `publish/packed/p-<project>-vX.Y.zip`，基于不可变版本目录
+  `publish/vX.Y/` 生成；文件名使用 UTF-8，解压后只有一个
+  `p-<project>-vX.Y/` 根目录。同名文件默认拒绝覆盖，用户确认替换后才加
+  `--force`。
+- `publish/` 根目录和 `workspace/` 根目录不再散放 zip。
 - 发布层只放成品与说明，不放底稿、脚本或中间图；底稿留在 `report/`、`deck/`，内部快照留在 `deliverables/`。
 - 版本目录**只读**：改稿另起 `v1.1`，并同步替换 `release/`；旧版本目录不改。
 - manifest 记录版本、日期、as-of、claims 版本、文件 sha256、复核级别；发布层 manifest 另记自包含检查结果（docx/pptx 无 External rels、HTML 无外部资源）。

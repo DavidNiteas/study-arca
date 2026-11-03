@@ -6,11 +6,13 @@
 
 | 目录 | 内容 |
 |---|---|
-| [project/](project/) | 新调研项目的完整初始目录、元数据和台账骨架 |
+| [project/](project/) | 新调研项目的完整初始目录、元数据、台账和发布/打包骨架 |
 | [report/](report/) | Markdown 报告初稿结构 |
 | [ppt/](ppt/) | PPT 大纲、设计意图、设计案例记录 |
 | [research/](research/) | 关键论文分析与研究循环记录样例 |
 | [output/](output/) | 输出请求、三种 Output Plan、Render Layout 与登记记录样例 |
+| [dialect/](dialect/) | 用户级本地方言的起始清单；不会被复制进产品发布历史 |
+| [program/](program/) | Program superproject 的最小清单与操作说明 |
 
 ## 规则
 

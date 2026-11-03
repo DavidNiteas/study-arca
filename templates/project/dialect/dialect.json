@@ -1,0 +1,11 @@
+{
+  "schema": "sa.dialect/1",
+  "id": "{{ID}}-dialect",
+  "scope": "workspace",
+  "version": "0.1.0",
+  "requires": {
+    "core": ">=0.1"
+  },
+  "capabilities": [],
+  "imports": []
+}

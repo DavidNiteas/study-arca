@@ -348,12 +348,20 @@ def _data_uri(path: Path) -> str | None:
     return f"data:{mime};base64,{payload}"
 
 
-def _layer_badge(layer: str) -> str:
-    return {
+def _layer_badge(layer: str, *, synthesis: bool = False) -> str:
+    labels = {
         "fact": '<span class="badge fact">事实</span>',
-        "inference": '<span class="badge inference">推论</span>',
+        "inference": (
+            '<span class="badge inference">代理归纳</span>'
+            if synthesis
+            else '<span class="badge inference">推论</span>'
+        ),
         "option": '<span class="badge option">选项</span>',
-    }.get(layer, "")
+        "user_statement": '<span class="badge user_statement">用户陈述</span>',
+        "material": '<span class="badge material">材料记录</span>',
+        "unknown": '<span class="badge unknown">未知</span>',
+    }
+    return labels.get(layer, "")
 
 
 def _render_table(block: dict) -> str:
@@ -365,26 +373,26 @@ def _render_table(block: dict) -> str:
     return f'<div class="table-wrap"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
 
 
-def _render_block(block: dict, project: Path) -> str:
+def _render_block(block: dict, project: Path, *, synthesis: bool = False) -> str:
     kind = block["type"]
     layer = block.get("layer", "fact")
     attrs = f'data-layer="{layer}"'
     if kind == "heading":
         level = block["level"]
-        return f'<h{level} class="block subheading" {attrs}>{_inline(block["text"])}</h{level}>'
+        return f'<h{level} class="subheading">{_inline(block["text"])}</h{level}>'
     if kind == "paragraph":
-        return f'<p class="block" {attrs}>{_layer_badge(layer)}{_inline(block["text"])}</p>'
+        return f'<p class="block" {attrs}>{_layer_badge(layer, synthesis=synthesis)}{_inline(block["text"])}</p>'
     if kind == "callout":
         return (
-            f'<div class="block callout" {attrs}>{_layer_badge(layer)}'
+            f'<div class="block callout" {attrs}>{_layer_badge(layer, synthesis=synthesis)}'
             f'<div>{_inline(block["text"])}</div></div>'
         )
     if kind == "list":
         tag = "ol" if block.get("ordered") else "ul"
         items = "".join(f"<li>{_inline(item)}</li>" for item in block["items"])
-        return f'<{tag} class="block" {attrs}>{_layer_badge(layer)}{items}</{tag}>'
+        return f'<{tag} class="block" {attrs}>{_layer_badge(layer, synthesis=synthesis)}{items}</{tag}>'
     if kind == "table":
-        return f'<div class="block" {attrs}>{_layer_badge(layer)}{_render_table(block)}</div>'
+        return f'<div class="block" {attrs}>{_layer_badge(layer, synthesis=synthesis)}{_render_table(block)}</div>'
     if kind == "figure":
         path = (project / block["src"]).resolve()
         uri = _data_uri(path)
@@ -393,7 +401,7 @@ def _render_block(block: dict, project: Path) -> str:
         else:
             body = f'<img src="{uri}" alt="{html.escape(block.get("caption", ""))}">'
         return (
-            f'<figure class="block" {attrs}>{_layer_badge(layer)}{body}'
+            f'<figure class="block" {attrs}>{_layer_badge(layer, synthesis=synthesis)}{body}'
             f'<figcaption>{_inline(block.get("caption", ""))}</figcaption></figure>'
         )
     if kind == "code":
@@ -435,6 +443,11 @@ def _references(document: dict, project: Path) -> str:
 
 def render_html(project: Path, document: dict | None = None, *, output: Path | str | None = None) -> Path:
     project = project.resolve()
+    try:
+        project_meta = json.loads((project / "project.json").read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        project_meta = {}
+    synthesis = project_meta.get("workspace_type") == "synthesis"
     if document is None:
         doc_path = project / "report" / "document.json"
         if not doc_path.exists():
@@ -444,7 +457,10 @@ def render_html(project: Path, document: dict | None = None, *, output: Path | s
 
     sections_html = []
     for section in document["sections"]:
-        blocks = "".join(_render_block(block, project) for block in section["blocks"])
+        blocks = "".join(
+            _render_block(block, project, synthesis=synthesis)
+            for block in section["blocks"]
+        )
         tag = "section" if section["level"] == 1 else "section"
         sections_html.append(
             f'<{tag} id="{section["id"]}" class="doc-section level-{section["level"]}">'
@@ -462,10 +478,26 @@ def render_html(project: Path, document: dict | None = None, *, output: Path | s
     as_of = html.escape(document.get("as_of", ""))
     project_id = html.escape(document.get("project", ""))
     generated = html.escape(document.get("generated_from", ""))
+    if synthesis:
+        layer_buttons = (
+            '<button data-layer-btn="all" class="active">全部</button>'
+            '<button data-layer-btn="user_statement">用户陈述</button>'
+            '<button data-layer-btn="material">材料记录</button>'
+            '<button data-layer-btn="inference">代理归纳</button>'
+            '<button data-layer-btn="unknown">未知</button>'
+        )
+    else:
+        layer_buttons = (
+            '<button data-layer-btn="all" class="active">全部</button>'
+            '<button data-layer-btn="fact">事实</button>'
+            '<button data-layer-btn="inference">推论</button>'
+            '<button data-layer-btn="option">选项</button>'
+        )
 
     css = """
 :root{--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--bg:#ffffff;--soft:#f8fafc;
---fact:#2f5d8a;--inference:#c07a34;--option:#6f659e;--accent:#2f5d8a}
+--fact:#2f5d8a;--inference:#c07a34;--option:#6f659e;--accent:#2f5d8a;
+--user_statement:#2f5d8a;--material:#2f7a67;--unknown:#6b7280}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;line-height:1.75;font-size:15.5px}
@@ -499,6 +531,9 @@ p{margin:10px 0}
 .badge.fact{background:#e8f0f8;color:var(--fact)}
 .badge.inference{background:#faf0e2;color:var(--inference)}
 .badge.option{background:#f0ecf7;color:var(--option)}
+.badge.user_statement{background:#e8f0f8;color:var(--user_statement)}
+.badge.material{background:#e6f5f0;color:var(--material)}
+.badge.unknown{background:#eef0f3;color:var(--unknown)}
 .callout{border-left:4px solid var(--inference);background:#fdfaf5;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
 code{background:#f3f4f6;padding:2px 5px;border-radius:4px;font-size:90%}
 pre{background:#0f172a;color:#e5e7eb;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.6}
@@ -524,9 +559,15 @@ sup .cite{font-size:10px;text-decoration:none;background:#eef2f7;color:var(--fac
 body[data-layer-mode="fact"] .block[data-layer="inference"],body[data-layer-mode="fact"] .block[data-layer="option"],
 body[data-layer-mode="inference"] .block[data-layer="fact"],body[data-layer-mode="inference"] .block[data-layer="option"],
 body[data-layer-mode="option"] .block[data-layer="fact"],body[data-layer-mode="option"] .block[data-layer="inference"]{display:none}
+body[data-layer-mode="user_statement"] .block:not([data-layer="user_statement"]),
+body[data-layer-mode="material"] .block:not([data-layer="material"]),
+body[data-layer-mode="unknown"] .block:not([data-layer="unknown"]){display:none}
 body[data-layer-mode="fact"] .block[data-layer="fact"] .badge,
 body[data-layer-mode="inference"] .block[data-layer="inference"] .badge,
-body[data-layer-mode="option"] .block[data-layer="option"] .badge{display:none}
+body[data-layer-mode="option"] .block[data-layer="option"] .badge,
+body[data-layer-mode="user_statement"] .block[data-layer="user_statement"] .badge,
+body[data-layer-mode="material"] .block[data-layer="material"] .badge,
+body[data-layer-mode="unknown"] .block[data-layer="unknown"] .badge{display:none}
 footer{border-top:1px solid var(--line);margin-top:50px;padding-top:16px;color:var(--muted);font-size:11.5px}
 @media (max-width:900px){.layout{display:block}.sidebar{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line);padding-bottom:16px}main{padding-top:24px}}
 @media print{.sidebar,.toolbar,.drawer{display:none!important}.layout{display:block;max-width:none;padding:0}body[data-layer-mode] .block{display:block!important}.doc-section.level-1{page-break-before:always}figure img{max-width:100%}}
@@ -610,24 +651,21 @@ document.getElementById('print').addEventListener('click',()=>window.print());
 <body data-layer-mode="all">
 <div class="layout">
 <aside class="sidebar">
-<div class="brand">SEARCH-ANALYSIS · 研究版</div>
+<div class="brand">{"STUDY ARCA · 工作汇总" if synthesis else "SEARCH-ANALYSIS · 研究版"}</div>
 <nav class="toc">{_toc(document)}</nav>
 </aside>
 <main>
-<div class="kicker">决策支持材料 · 不含建议</div>
+<div class="kicker">{"当前工作情况 · 材料可追溯" if synthesis else "决策支持材料 · 不含建议"}</div>
 <h1>{title}</h1>
 <div class="doc-meta"><span>{version}</span><span>as-of {as_of}</span><span>{project_id}</span></div>
-<div class="notice">本材料按三层组织：<strong>事实</strong>（带来源）、<strong>推论</strong>（标假设）、<strong>选项</strong>（对称呈现，不排名）。最终选择由读者按自身目标决定。</div>
+<div class="notice">{"本材料区分用户陈述、材料记录、代理归纳与未知项；未提供的成果和计划保持缺失。" if synthesis else "本材料按三层组织：<strong>事实</strong>（带来源）、<strong>推论</strong>（标假设）、<strong>选项</strong>（对称呈现，不排名）。最终选择由读者按自身目标决定。"}</div>
 <div class="toolbar">
-<button data-layer-btn="all" class="active">全部</button>
-<button data-layer-btn="fact">事实</button>
-<button data-layer-btn="inference">推论</button>
-<button data-layer-btn="option">选项</button>
+{layer_buttons}
 <input id="search" type="search" placeholder="搜索本报告…">
 <button id="print">打印 / PDF</button>
 </div>
 {''.join(sections_html)}
-<section class="doc-section level-1" id="refs"><h1>来源与引用</h1>{_references(document, project)}</section>
+<section class="doc-section level-1" id="refs"><h1>{"材料与追溯" if synthesis else "来源与引用"}</h1>{_references(document, project)}</section>
 <footer>生成自 {generated} ｜ 结构 {html.escape(document.get('schema',''))} ｜ 层标注为 {html.escape(document.get('layer_source',''))}，需人工复核。</footer>
 </main>
 </div>

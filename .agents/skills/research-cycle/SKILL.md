@@ -14,7 +14,7 @@ description: 在 Study Arca 项目中执行专业调研循环，接手研究问�
 3. 围绕当前问题与后续任务执行。记录使用 `cycle capture` 冻结材料、`cycle apply --file <记录JSON>` 追加历史；语法见 docs/09，示例见 [records.example.json](../../../templates/research/records.example.json)。
    分析关键文献和综合结论时读[研究分析与论证](../../../docs/13-研究分析与论证.md)，解释研究问题、实验/对照、观察及推理桥梁，不能只列来源、年份和结论。阅读范围不足的细节标未知，不补造实验。
 4. 输出按格式分流：DOCX 使用 `sa document convert|validate|build`，HTML 使用 `sa experience convert|validate|build`，PPT 按[PPT 设计方法与模式](../../../docs/11-PPT设计方法与模式.md)和[presentation-design 技能](../presentation-design/SKILL.md)执行。三者只消费冻结 Research Snapshot；旧 `sa render html/docx` 保留兼容。对目标软件生成的最终图片实际看图，再登记 review。文字边界校验不替代看图，self 不冒充 independent。
-5. 工作结束运行 `cycle lint` 和项目 `lint`，交接当前约定、轮次、任务 ID 与限制。研究轮次结束与正式发布分开。
+5. 工作结束运行 `cycle lint` 和项目 `lint`，交接当前约定、轮次、任务 ID 与限制。研究轮次结束与正式发布分开；发布完成也不自动打包，只有用户明确要求时才运行 `sa pack`，产物固定在项目 `publish/packed/`。
 
 只在用户已授权的范围内推进；改变目标、受众或实质范围时记录修订提案。批准凭据是原话转录，不能自动证明人的身份，也不能把无回复当批准。
 

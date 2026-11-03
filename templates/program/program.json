@@ -1,0 +1,7 @@
+{
+  "schema": "sa.program/1",
+  "id": "prog-example",
+  "title": "示例 program",
+  "status": "active",
+  "distribution": "local"
+}

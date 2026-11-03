@@ -1,0 +1,11 @@
+{
+  "schema": "sa.dialect/1",
+  "id": "user-default",
+  "scope": "user",
+  "version": "0.1.0",
+  "requires": {
+    "core": ">=0.1"
+  },
+  "capabilities": [],
+  "imports": []
+}

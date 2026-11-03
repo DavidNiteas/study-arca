@@ -10,8 +10,13 @@ from pathlib import Path
 from .project import (
     EVIDENCE_GRADES,
     PROJECT_ID_RE,
-    REQUIRED_DIRS,
     load_json,
+)
+from .workspace import (
+    SCHEMA as WORKSPACE_SCHEMA,
+    infer_workspace_type,
+    required_dirs,
+    validate_workspace,
 )
 
 REQUIRED_META = [
@@ -121,11 +126,25 @@ def lint_project(
         report.error(f"项目 id 格式错误：{project_id}（应为 p-YYYYMMDD-slug）")
 
     workflow = project_meta.get("workflow", "legacy")
-    if not isinstance(workflow, str) or workflow not in {"legacy", "sa.research/1"}:
+    if not isinstance(workflow, str) or workflow not in {
+        "legacy", "sa.research/1", "sa.synthesis/1"
+    }:
         report.error("未知 workflow；不能静默按旧契约解释")
     native_cycle = workflow == "sa.research/1"
-    if native_cycle and project_meta.get("status") not in ("active", "suspended", "archived"):
-        report.error("新研究项目生命周期只能 active/suspended/archived；交付与轮次单独记录")
+    native_synthesis = workflow == "sa.synthesis/1"
+    modern = project_meta.get("schema") == WORKSPACE_SCHEMA
+    workspace_type = infer_workspace_type(project_meta)
+    workspace_errors, workspace_warnings = validate_workspace(project, project_meta)
+    for message in workspace_errors:
+        report.error(message)
+    for message in workspace_warnings:
+        report.warn(message)
+    if modern and project_meta.get("status") not in ("active", "suspended", "archived"):
+        report.error("现代工作区生命周期只能 active/suspended/archived")
+    if (native_cycle or native_synthesis) and project_meta.get("status") not in (
+        "active", "suspended", "archived"
+    ):
+        report.error("新工作区生命周期只能 active/suspended/archived；交付单独记录")
     if native_cycle or (project / "research/cycle.json").exists():
         from .cycle import read_json, validate
         from .project import ProjectError
@@ -134,16 +153,21 @@ def lint_project(
                 report.error("research: " + error)
         except ProjectError as exc:
             report.error(str(exc))
-    for rel in REQUIRED_DIRS:
-        if native_cycle and rel == "_dev":
-            continue
-        if not (project / rel).is_dir():
-            report.error(f"缺少目录：{rel}")
+    if native_synthesis:
+        from .synthesis import validate_synthesis
+        for error in validate_synthesis(project):
+            report.error("synthesis: " + error)
+    if not modern:
+        for rel in required_dirs(workspace_type or "research", modern=False):
+            if workflow == "sa.research/1" and rel == "_dev":
+                continue
+            if not (project / rel).is_dir():
+                report.error(f"缺少目录：{rel}")
 
     # 状态一致性：project.json ↔ _dev/03
     state_file = project / "_dev" / "03-调研状态.md"
     state_text = state_file.read_text(encoding="utf-8") if state_file.exists() else ""
-    if state_file.exists() and not native_cycle:
+    if state_file.exists() and workflow == "legacy":
         match = STATUS_LINE_RE.search(state_text)
         if not match:
             report.warn("_dev/03-调研状态.md 未找到「状态：<status>」行")
@@ -154,7 +178,7 @@ def lint_project(
             )
 
     # Gate waiver
-    waivers = [] if native_cycle else project_meta.get("gate_waivers", [])
+    waivers = [] if workflow != "legacy" else project_meta.get("gate_waivers", [])
     if waivers and not isinstance(waivers, list):
         report.error("gate_waivers 必须是数组")
         waivers = []
@@ -176,6 +200,9 @@ def lint_project(
             report.warn(f"{gate} 已标绿但仍有 waiver，应删除豁免")
         elif gate_marks[gate] == "🟡":
             report.info(f"{gate} 条件性通过（waiver）：{waiver.get('reason')}")
+
+    if modern and workspace_type == "synthesis":
+        return report
 
     # 来源
     sources: dict[str, dict] = {}

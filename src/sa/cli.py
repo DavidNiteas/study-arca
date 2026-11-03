@@ -11,7 +11,24 @@ from pathlib import Path
 from . import __version__
 from .evidence import lint_project
 from .docx_render import DOCX_AVAILABLE, RenderDependencyError, render_docx
+from .dialect import dialect_status, import_dialect, init_user_dialect, promote_dialect
+from .pack import pack_release
+from .program import (
+    attach_node,
+    bundle_program,
+    check_program,
+    clone_program,
+    init_program,
+    program_index,
+    program_status,
+    set_distribution,
+)
 from .render import build_document, render_html, write_document
+from .synthesis import (
+    build_synthesis_report,
+    init_synthesis,
+    validate_synthesis,
+)
 from .project import (
     EVIDENCE_GRADES,
     ProjectError,
@@ -19,6 +36,22 @@ from .project import (
     add_sources_batch,
     new_project,
     status_counts,
+)
+from .workspace import (
+    PROVIDED_AUTHORITY,
+    PROVIDED_ROLES,
+    PROVIDED_VERIFICATION,
+    REFERENCE_RELATIONS,
+    WORK_ORDER_STATUS,
+    WORKSPACE_TYPES,
+    add_provided_input,
+    add_reference,
+    create_work_order,
+    load_work_orders,
+    set_work_order_status,
+    validate_references,
+    verify_reference_authorities,
+    workspace_status,
 )
 
 
@@ -43,18 +76,68 @@ def _print_report(report, as_json: bool = False) -> None:
 
 
 def cmd_new(args) -> int:
-    dest = new_project(args.slug, args.title, args.root, args.date, workflow=args.workflow)
+    dest = new_project(
+        args.slug,
+        args.title,
+        args.root,
+        args.date,
+        workflow=args.workflow,
+        workspace_type=args.workspace_type,
+    )
     print(f"已创建：{dest}")
+    print(f"工作区类型：{args.workspace_type}")
     print(f"独立仓库：{'已初始化' if (dest / '.git').exists() else '未初始化（检查 git）'}")
     print("\n下一步：")
-    if args.workflow == "cycle":
+    if args.workspace_type == "research" and args.workflow == "cycle":
         print("  1. 填 brief/brief.md，按 docs/09 登记研究约定，再建立问题与轮次")
         print(f'     python scripts/sa.py cycle status "{dest}"')
+    elif args.workspace_type == "synthesis":
+        print("  1. 填 brief/brief.md 和 brief/provided/manifest.json，再登记工作对象")
+        print(f'     python scripts/sa.py work new "{dest}" --title ... --goal ...')
     else:
         print(f"  1. 填 {dest / 'brief' / 'brief.md'} 与 _dev/01-目标与设计.md（G0）")
     print(f"  2. 采集后建信封：python scripts/sa.py source \"{dest}\" --title ...")
     print(f"  3. 校验：python scripts/sa.py lint \"{dest}\"")
     return 0
+
+
+def cmd_pack(args) -> int:
+    output = pack_release(Path(args.project), args.version, force=args.force)
+    print(f"已打包：{output}")
+    return 0
+
+
+def cmd_dialect(args) -> int:
+    if args.action == "init":
+        from .project import REPO_ROOT
+        print(f"已初始化用户方言：{init_user_dialect(REPO_ROOT)}")
+        return 0
+    if args.action == "status":
+        from .project import REPO_ROOT
+        print(json.dumps(
+            dialect_status(REPO_ROOT, args.workspace),
+            ensure_ascii=False,
+            indent=2,
+        ))
+        return 0
+    if args.action == "import":
+        if not args.workspace or not args.source:
+            raise ProjectError("dialect import 需要 --workspace 和 --source")
+        print(f"已导入工作区方言：{import_dialect(args.workspace, args.source)}")
+        return 0
+    if args.action == "promote":
+        if not args.workspace or not args.scope:
+            raise ProjectError("dialect promote 需要 --workspace 和 --scope")
+        from .project import REPO_ROOT
+        promoted = promote_dialect(
+            REPO_ROOT,
+            args.workspace,
+            scope=args.scope,
+            output=args.output,
+        )
+        print(f"已生成方言晋升结果：{promoted}")
+        return 0
+    raise ProjectError(f"未知 dialect 操作：{args.action}")
 
 
 def cmd_source(args) -> int:
@@ -120,6 +203,7 @@ def cmd_lint(args) -> int:
 
 def cmd_status(args) -> int:
     counts = status_counts(Path(args.project))
+    counts["workspace"] = workspace_status(Path(args.project))
     cycle = None
     if (Path(args.project) / "research/cycle.json").exists():
         from .cycle import cycle_status
@@ -129,20 +213,178 @@ def cmd_status(args) -> int:
         print(json.dumps(counts, ensure_ascii=False, indent=2))
         return 0
     print(f"项目：{counts['id']}  {counts['title']}")
+    print(f"工作区类型：{counts['workspace'].get('workspace_type') or 'legacy'}")
     print(f"状态：{counts['status']}")
-    print(f"来源：{counts['sources']}  "
-          f"(E1={counts['grades']['E1']} E2={counts['grades']['E2']} "
-          f"E3={counts['grades']['E3']} E4={counts['grades']['E4']})")
-    print(f"结论：{counts['claims']}  "
-          f"(high={counts['confidence']['high']} "
-          f"medium={counts['confidence']['medium']} low={counts['confidence']['low']})")
-    print(f"基准事实：{counts['facts']}  冲突：{counts['conflicts']} "
-          f"(未决 {counts['conflicts_unresolved']})")
+    print(f"工单：{counts['workspace']['work_orders']} "
+          f"(待处理 {counts['workspace']['work_orders_open']})")
+    print(f"用户材料：{counts['workspace']['provided_inputs']}  "
+          f"引用：{counts['workspace']['references']}")
+    if counts["workspace"].get("workspace_type") == "research":
+        print(f"来源：{counts['sources']}  "
+              f"(E1={counts['grades']['E1']} E2={counts['grades']['E2']} "
+              f"E3={counts['grades']['E3']} E4={counts['grades']['E4']})")
+        print(f"结论：{counts['claims']}  "
+              f"(high={counts['confidence']['high']} "
+              f"medium={counts['confidence']['medium']} low={counts['confidence']['low']})")
+        print(f"基准事实：{counts['facts']}  冲突：{counts['conflicts']} "
+              f"(未决 {counts['conflicts_unresolved']})")
     if cycle is not None:
         print(f"研究循环：{len(cycle['rounds'])} 轮；{sum(a['status'] == 'open' for a in cycle['actions'])} 个待处理任务；当前约定 {cycle['current_agreement']}")
     if counts.get("waivers"):
         print(f"Gate waiver：{counts['waivers']} 项")
     return 0
+
+
+def cmd_work(args) -> int:
+    project = Path(args.project)
+    if args.action == "new":
+        if not args.title or not args.goal:
+            raise ProjectError("work new 需要 --title 和 --goal")
+        path = create_work_order(project, args.title, args.goal, status=args.status)
+        print(f"已创建工单：{path}")
+        return 0
+    if args.action == "status":
+        if not args.id or not args.status:
+            raise ProjectError("work status 需要 --id 和 --status")
+        path = set_work_order_status(project, args.id, args.status)
+        print(f"已更新工单：{path}")
+        return 0
+    orders = load_work_orders(project)
+    if args.json:
+        print(json.dumps(orders, ensure_ascii=False, indent=2))
+    elif not orders:
+        print("当前工作区没有工单")
+    else:
+        for order in orders:
+            print(f"{order['id']}  {order['status']:<8}  {order['title']}")
+    return 0
+
+
+def cmd_input(args) -> int:
+    if args.action != "add":
+        raise ProjectError(f"未知 input 操作：{args.action}")
+    destination, item = add_provided_input(
+        Path(args.project),
+        args.file,
+        role=args.role,
+        authority=args.authority,
+        verification=args.verification,
+    )
+    print(f"已登记用户材料：{item['id']}  {destination}")
+    return 0
+
+
+def cmd_program(args) -> int:
+    if args.action == "init":
+        if not args.id or not args.title:
+            raise ProjectError("program init 需要 --id 和 --title")
+        path = init_program(
+            args.path,
+            args.id,
+            args.title,
+            git=not args.no_git,
+            allow_existing=args.allow_existing,
+        )
+        print(f"已创建 program：{path}")
+        return 0
+    if args.action == "attach":
+        if not args.source:
+            raise ProjectError("program attach 需要 source")
+        path = attach_node(args.path, args.source, args.node_path)
+        print(f"已挂载子节点：{path}")
+        return 0
+    if args.action == "status":
+        status = program_status(args.path)
+        print(json.dumps(status, ensure_ascii=False, indent=2) if args.json else
+              f"{status['id']}  {status['distribution']}  {len(status['submodules'])} 个子模块")
+        return 0
+    if args.action == "check":
+        errors, warnings = check_program(args.path, require_cloneable=args.require_cloneable)
+        for message in errors:
+            print(f"[ERROR] {message}")
+        for message in warnings:
+            print(f"[WARN ] {message}")
+        print(f"program check：{len(errors)} error / {len(warnings)} warn")
+        return 1 if errors else 0
+    if args.action == "set-distribution":
+        if not args.distribution:
+            raise ProjectError("program set-distribution 需要 local 或 cloneable")
+        meta = set_distribution(args.path, args.distribution)
+        print(f"program distribution：{meta['distribution']}")
+        return 0
+    if args.action == "index":
+        data = program_index(args.path)
+        text = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+        if args.output:
+            output = Path(args.output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(text, encoding="utf-8")
+            print(f"已生成 program 索引：{output}")
+        else:
+            print(text, end="")
+        return 0
+    if args.action == "clone":
+        if not args.source:
+            raise ProjectError("program clone 需要 source 和 destination")
+        destination = clone_program(args.path, args.source)
+        print(f"已克隆 program：{destination}")
+        return 0
+    if args.action == "bundle":
+        if not args.output:
+            raise ProjectError("program bundle 需要 --output")
+        output = bundle_program(args.path, args.output, force=args.force)
+        print(f"已生成 program 迁移包：{output}")
+        return 0
+    raise ProjectError(f"未知 program 操作：{args.action}")
+
+
+def cmd_ref(args) -> int:
+    if args.action == "add":
+        if not args.source_workspace or not args.artifact or not args.relation:
+            raise ProjectError("ref add 需要 --source-workspace、--artifact 和 --relation")
+        path, manifest = add_reference(
+            Path(args.project),
+            args.source_workspace,
+            args.artifact,
+            relation=args.relation,
+            artifact_id=args.artifact_id,
+        )
+        print(f"已物化引用：{manifest['id']}  {path}")
+        return 0
+    errors = validate_references(Path(args.project))
+    if args.action == "verify":
+        if not args.search_root:
+            raise ProjectError("ref verify 需要 --search-root")
+        for status in verify_reference_authorities(Path(args.project), args.search_root):
+            print(
+                f"{status['id']}: {status['authority_state']} "
+                f"target={status['target_workspace']} "
+                f"pin={status['target_commit'] or '-'} "
+                f"current={status['current_commit'] or '-'}"
+            )
+    for message in errors:
+        print(f"[ERROR] {message}")
+    print(f"引用检查：{len(errors)} error")
+    return 1 if errors else 0
+
+
+def cmd_synthesis(args) -> int:
+    project = Path(args.project)
+    if args.action == "init":
+        print(init_synthesis(project))
+        return 0
+    if args.action == "validate":
+        errors = validate_synthesis(project)
+        for message in errors:
+            print(f"[ERROR] {message}")
+        print(f"synthesis：{len(errors)} error")
+        return 1 if errors else 0
+    if args.action == "build":
+        outputs = build_synthesis_report(project, docx=args.docx)
+        for kind, path in outputs.items():
+            print(f"{kind}: {path}")
+        return 0
+    raise ProjectError(f"未知 synthesis 操作：{args.action}")
 
 
 def cmd_cycle(args) -> int:
@@ -449,6 +691,47 @@ def cmd_selftest(args) -> int:
             (project / "report" / "document.json").exists()
             and (project / "report" / "README.md").exists(),
         )
+        release = project / "publish" / "v1.0"
+        release.mkdir(parents=True)
+        (release / "manifest.json").write_text(
+            json.dumps({"version": "v1.0"}), encoding="utf-8"
+        )
+        (release / "README.md").write_text("packed output\n", encoding="utf-8")
+        archive = pack_release(project, "v1.0")
+        _check(
+            results,
+            "版本目录显式打包到 packed",
+            archive == project / "publish" / "packed" / f"{project.name}-v1.0.zip"
+            and archive.is_file(),
+        )
+        synthesis = new_project(
+            "synthesis-demo",
+            "示例总结",
+            root=root,
+            git=False,
+            workflow="cycle",
+            workspace_type="synthesis",
+        )
+        order = create_work_order(synthesis, "整理当前工作", "形成可追溯的工作汇总")
+        synthesis_lint = lint_project(synthesis)
+        _check(
+            results,
+            "总结型工作区与本地工单",
+            (synthesis / "synthesis/ledger.json").is_file()
+            and (synthesis / "work-model").is_dir()
+            and order.is_file()
+            and synthesis_lint.ok,
+            synthesis_lint.errors,
+        )
+        demo_program = init_program(root / "program-demo", "prog-demo", "示例 Program")
+        program_errors, _ = check_program(demo_program)
+        _check(
+            results,
+            "Program 薄索引初始化",
+            program_status(demo_program)["distribution"] == "local"
+            and not program_errors,
+            program_errors,
+        )
         html_path = render_html(project)
         html_text = html_path.read_text(encoding="utf-8")
         _check(
@@ -662,13 +945,81 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"sa {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    new = sub.add_parser("new", help="新建调研项目")
+    new = sub.add_parser("new", help="新建工作区")
     new.add_argument("slug")
     new.add_argument("--title", default=None)
-    new.add_argument("--root", default=None, help="工作区根目录，默认 <repo>/workspace")
+    new.add_argument("--root", default=None, help="工作区根目录，默认 <repo>/work-root（兼容 workspace）")
     new.add_argument("--date", default=None, help="YYYY-MM-DD，默认今天")
+    new.add_argument("--type", dest="workspace_type", choices=sorted(WORKSPACE_TYPES), default="research")
     new.add_argument("--workflow", choices=["cycle", "legacy"], default="cycle")
     new.set_defaults(func=cmd_new)
+
+    work = sub.add_parser("work", help="工作区本地工单")
+    work.add_argument("action", choices=["new", "list", "status"])
+    work.add_argument("project")
+    work.add_argument("--id")
+    work.add_argument("--title")
+    work.add_argument("--goal")
+    work.add_argument("--status", choices=sorted(WORK_ORDER_STATUS), default="proposed")
+    work.add_argument("--json", action="store_true")
+    work.set_defaults(func=cmd_work)
+
+    input_parser = sub.add_parser("input", help="登记用户提供的材料")
+    input_parser.add_argument("action", choices=["add"])
+    input_parser.add_argument("project")
+    input_parser.add_argument("--file", required=True)
+    input_parser.add_argument("--role", choices=sorted(PROVIDED_ROLES), default="work_record")
+    input_parser.add_argument("--authority", choices=sorted(PROVIDED_AUTHORITY), default="first_person")
+    input_parser.add_argument(
+        "--verification",
+        choices=sorted(PROVIDED_VERIFICATION),
+        default="self_reported",
+    )
+    input_parser.set_defaults(func=cmd_input)
+
+    program = sub.add_parser("program", help="Program 薄索引与 Git 子模块")
+    program.add_argument(
+        "action",
+        choices=[
+            "init",
+            "attach",
+            "status",
+            "check",
+            "set-distribution",
+            "index",
+            "clone",
+            "bundle",
+        ],
+    )
+    program.add_argument("path")
+    program.add_argument("source", nargs="?")
+    program.add_argument("--id")
+    program.add_argument("--title")
+    program.add_argument("--path", dest="node_path")
+    program.add_argument("--distribution", choices=["local", "cloneable"])
+    program.add_argument("--require-cloneable", action="store_true")
+    program.add_argument("--output")
+    program.add_argument("--json", action="store_true")
+    program.add_argument("--no-git", action="store_true")
+    program.add_argument("--allow-existing", action="store_true")
+    program.add_argument("--force", action="store_true")
+    program.set_defaults(func=cmd_program)
+
+    ref = sub.add_parser("ref", help="跨工作区引用与物化副本")
+    ref.add_argument("action", choices=["add", "check", "verify"])
+    ref.add_argument("project")
+    ref.add_argument("--source-workspace")
+    ref.add_argument("--artifact")
+    ref.add_argument("--artifact-id")
+    ref.add_argument("--relation", choices=sorted(REFERENCE_RELATIONS))
+    ref.add_argument("--search-root")
+    ref.set_defaults(func=cmd_ref)
+
+    synthesis = sub.add_parser("synthesis", help="总结型工作区模型与报告")
+    synthesis.add_argument("action", choices=["init", "validate", "build"])
+    synthesis.add_argument("project")
+    synthesis.add_argument("--docx", action="store_true")
+    synthesis.set_defaults(func=cmd_synthesis)
 
     source = sub.add_parser("source", help="新建来源信封（单条或批量）")
     source.add_argument("project")
@@ -697,6 +1048,20 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("project")
     status.add_argument("--json", action="store_true")
     status.set_defaults(func=cmd_status)
+
+    pack = sub.add_parser("pack", help="把指定发布版本显式打包到 publish/packed")
+    pack.add_argument("project")
+    pack.add_argument("--version", required=True, help="不可变版本目录名，例如 v1.0")
+    pack.add_argument("--force", action="store_true", help="替换已存在的同名压缩包")
+    pack.set_defaults(func=cmd_pack)
+
+    dialect = sub.add_parser("dialect", help="本机用户方言")
+    dialect.add_argument("action", choices=["init", "status", "import", "promote"])
+    dialect.add_argument("--workspace")
+    dialect.add_argument("--source")
+    dialect.add_argument("--scope", choices=["user", "core"])
+    dialect.add_argument("--output")
+    dialect.set_defaults(func=cmd_dialect)
 
     render = sub.add_parser("render", help="呈现层：构建 document.json / 渲染 HTML")
     render.add_argument("action", choices=["build", "html", "docx", "pptx"])
