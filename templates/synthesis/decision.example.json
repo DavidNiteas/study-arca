@@ -1,0 +1,11 @@
+{
+  "id": "d-0001",
+  "type": "decision",
+  "round": "r-0001",
+  "actor": "user",
+  "decision": "drill_down",
+  "rationale": "当前层叙事已对齐，下一轮展开方法体系。",
+  "target_topic": "method-paradigm",
+  "target_title": "方法范式",
+  "materials": ["u-0001"]
+}

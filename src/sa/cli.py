@@ -390,10 +390,13 @@ def cmd_synthesis(args) -> int:
         else:
             print(f"当前模型：{value['model_sha256']}")
             for round_record in value["rounds"]:
+                topic = round_record.get("topic_title") or round_record["goal"]
                 print(
                     f"{round_record['id']}  {round_record['status']:<6}  "
-                    f"{round_record['goal']}"
+                    f"{topic}  decision={round_record['decision']}"
                 )
+                if round_record.get("children"):
+                    print(f"  children: {', '.join(round_record['children'])}")
                 for question in round_record["questions"]:
                     print(
                         f"  {question['id']}  {question['priority']:<6}  "
@@ -420,6 +423,27 @@ def cmd_synthesis(args) -> int:
         if not args.round:
             raise ProjectError("synthesis alignment 需要 --round")
         print(render_alignment_record(project, args.round))
+        return 0
+    if args.action == "decision":
+        if not args.round or not args.id or not args.decision or not args.rationale:
+            raise ProjectError("synthesis decision 需要 --round、--id、--decision 和 --rationale")
+        record = {
+            "id": args.id,
+            "type": "decision",
+            "round": args.round,
+            "actor": "user",
+            "decision": args.decision,
+            "rationale": args.rationale,
+            "materials": args.material or [],
+        }
+        if args.target_topic:
+            record["target_topic"] = args.target_topic
+        if args.target_title:
+            record["target_title"] = args.target_title
+        if args.resume_when:
+            record["resume_when"] = args.resume_when
+        apply_synthesis_records(project, record)
+        print(f"已登记 {args.round} 的循环决定：{args.decision}")
         return 0
     if args.action == "build":
         outputs = build_synthesis_report(
@@ -1115,7 +1139,9 @@ def build_parser() -> argparse.ArgumentParser:
     synthesis = sub.add_parser("synthesis", help="总结型工作区模型、复盘对齐与报告")
     synthesis.add_argument(
         "action",
-        choices=["init", "validate", "status", "apply", "snapshot", "alignment", "build"],
+        choices=[
+            "init", "validate", "status", "apply", "snapshot", "alignment", "decision", "build"
+        ],
     )
     synthesis.add_argument("project")
     synthesis.add_argument("--file")
@@ -1123,6 +1149,12 @@ def build_parser() -> argparse.ArgumentParser:
     synthesis.add_argument("--label")
     synthesis.add_argument("--round")
     synthesis.add_argument("--snapshot")
+    synthesis.add_argument("--decision", choices=["exit", "continue", "drill_down", "park"])
+    synthesis.add_argument("--rationale")
+    synthesis.add_argument("--target-topic")
+    synthesis.add_argument("--target-title")
+    synthesis.add_argument("--resume-when")
+    synthesis.add_argument("--material", action="append")
     synthesis.add_argument("--docx", action="store_true")
     synthesis.add_argument("--json", action="store_true")
     synthesis.set_defaults(func=cmd_synthesis)

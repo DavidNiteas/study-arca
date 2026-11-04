@@ -17,10 +17,13 @@ WORK_MODEL_SCHEMA = "sa.work-model/1"
 SNAPSHOT_SCHEMA = "sa.work-snapshot/1"
 ITEM_STATUS = {"planned", "active", "blocked", "done", "unknown"}
 CONTENT_LAYERS = {"user_statement", "material", "inference", "unknown"}
-RECORD_TYPES = {"round", "review", "question", "answer", "correction", "alignment", "snapshot"}
+RECORD_TYPES = {
+    "round", "review", "question", "answer", "correction", "alignment", "snapshot", "decision"
+}
 QUESTION_PRIORITIES = {"high", "medium", "low"}
 ANSWER_STATUSES = {"answered", "unknown", "skipped", "deferred"}
 ALIGNMENT_STATUSES = {"confirmed", "disputed", "unknown", "deferred", "out_of_scope"}
+ROUND_DECISIONS = {"exit", "continue", "drill_down", "park"}
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,79}$")
 LAYER_LABELS = {
     "user_statement": "用户陈述",
@@ -217,6 +220,10 @@ def _validate_records(
     answers: dict[str, str] = {}
     aligned: set[str] = set()
     alignment_hashes: dict[str, str] = {}
+    decision_rounds: set[str] = set()
+    snapshot_rounds: dict[str, str] = {}
+    round_topics: dict[str, str] = {}
+    topics: set[str] = set()
 
     def text(record: dict, field: str, mark: str) -> bool:
         if not isinstance(record.get(field), str) or not record[field].strip():
@@ -281,6 +288,45 @@ def _validate_records(
                             errors.append(
                                 f"{mark}.related_work_items 引用了不存在的工作主题：{item_id}"
                             )
+                if record.get("topic") in topics and "parent_snapshot" not in record:
+                    errors.append(mark + " 同一主题续轮必须引用前序 parent_snapshot")
+            parent_snapshot = record.get("parent_snapshot")
+            parent_topic = record.get("parent_topic")
+            if parent_snapshot is not None or parent_topic is not None:
+                if not isinstance(parent_snapshot, str) or not parent_snapshot.strip():
+                    errors.append(mark + ".parent_snapshot 必须是非空引用")
+                elif parent_snapshot not in snapshot_rounds:
+                    errors.append(mark + ".parent_snapshot 必须引用前序 snapshot")
+                if parent_topic is not None:
+                    if not isinstance(parent_topic, str) or not ID_RE.fullmatch(parent_topic):
+                        errors.append(mark + ".parent_topic 必须是小写 ID")
+                    elif parent_topic not in topics:
+                        errors.append(mark + ".parent_topic 必须引用前序 topic")
+                    elif isinstance(parent_snapshot, str):
+                        parent_round_id = snapshot_rounds.get(parent_snapshot)
+                        if round_topics.get(parent_round_id) != parent_topic:
+                            errors.append(mark + ".parent_topic 与 parent_snapshot 不一致")
+                if isinstance(parent_snapshot, str):
+                    parent_round_id = snapshot_rounds.get(parent_snapshot)
+                    parent_decision = next(
+                        (
+                            decision for decision in records[:index]
+                            if decision.get("type") == "decision"
+                            and decision.get("round") == parent_round_id
+                        ),
+                        None,
+                    )
+                    if not parent_decision:
+                        errors.append(mark + " 父轮次缺少用户循环出口决定")
+                    elif parent_decision.get("decision") == "drill_down":
+                        if parent_decision.get("target_topic") != record.get("topic"):
+                            errors.append(mark + " 父轮次 drill_down 目标与当前 topic 不一致")
+                    elif parent_decision.get("decision") == "continue":
+                        parent_topic_of_round = round_topics.get(parent_round_id)
+                        if parent_topic_of_round and record.get("topic") != parent_topic_of_round:
+                            errors.append(mark + " 同主题续轮必须沿用父轮次 topic")
+                    else:
+                        errors.append(mark + " 父轮次的循环出口不允许创建新轮次")
         elif kind == "review":
             target = round_ref()
             if target and target["id"] in closed:
@@ -472,12 +518,46 @@ def _validate_records(
                                 errors.append(f"{mark} 快照 model_sha256 不一致")
                             elif snapshot.get("model_sha256") != alignment_hashes.get(record.get("round")):
                                 errors.append(f"{mark} 快照未绑定本轮对齐时的模型版本")
+            if target:
+                snapshot_rounds[record_id] = target["id"]
+        elif kind == "decision":
+            target = round_ref()
+            if not target:
+                pass
+            elif target["id"] not in closed:
+                errors.append(mark + " 只能对已对齐关闭的轮次作决定")
+            elif target["id"] not in snapshot_rounds.values():
+                errors.append(mark + " 作决定前必须冻结轮次快照")
+            if record.get("round") in decision_rounds:
+                errors.append(mark + " 每个轮次只能登记一次循环决定")
+            if record.get("actor") != "user":
+                errors.append(mark + ".actor 必须是 user")
+            if record.get("decision") not in ROUND_DECISIONS:
+                errors.append(mark + ".decision 非法")
+            text(record, "rationale", mark)
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            if record.get("decision") == "drill_down":
+                target_topic = record.get("target_topic")
+                if not isinstance(target_topic, str) or not ID_RE.fullmatch(target_topic):
+                    errors.append(mark + ".target_topic 必须是小写 ID")
+                text(record, "target_title", mark)
+            if record.get("decision") == "park":
+                text(record, "resume_when", mark)
+            if record.get("round") in rounds:
+                decision_rounds.add(record["round"])
         seen[record_id] = record
         if kind == "round":
             open_ids = set(rounds) - closed
             if open_ids:
                 errors.append(mark + " 新建轮次前必须关闭当前轮次")
             rounds[record_id] = record
+            if isinstance(record.get("topic"), str):
+                round_topics[record_id] = record["topic"]
+                topics.add(record["topic"])
     return errors
 
 
@@ -743,6 +823,11 @@ def synthesis_status(project: Path | str) -> dict:
         for record in records
         if record.get("type") == "alignment"
     }
+    decisions = {
+        record["round"]: record
+        for record in records
+        if record.get("type") == "decision"
+    }
     rounds = []
     for record in records:
         if record.get("type") != "round":
@@ -763,8 +848,11 @@ def synthesis_status(project: Path | str) -> dict:
             "topic": record.get("topic"),
             "topic_title": record.get("topic_title") or record["goal"],
             "related_work_items": record.get("related_work_items", []),
+            "parent_topic": record.get("parent_topic"),
+            "parent_snapshot": record.get("parent_snapshot"),
             "goal": record["goal"],
             "status": "closed" if round_id in aligned else "open",
+            "decision": decisions.get(round_id, {}).get("decision", "pending"),
             "reviews": sum(
                 1 for item in records
                 if item.get("type") == "review" and item.get("round") == round_id
@@ -781,6 +869,19 @@ def synthesis_status(project: Path | str) -> dict:
         for record in records
         if record.get("type") == "snapshot"
     ]
+    snapshot_rounds = {
+        record["id"]: record["round"]
+        for record in records
+        if record.get("type") == "snapshot"
+    }
+    children: dict[str, list[str]] = {}
+    for record in records:
+        if record.get("type") == "round" and record.get("parent_snapshot"):
+            parent_round = snapshot_rounds.get(record["parent_snapshot"])
+            if parent_round:
+                children.setdefault(parent_round, []).append(record["id"])
+    for round_record in rounds:
+        round_record["children"] = children.get(round_record["id"], [])
     return {
         "schema": SCHEMA,
         "project": data["project"],
@@ -852,6 +953,13 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     corrections = [
         record for record in round_records if record.get("type") == "correction"
     ]
+    decision = next(
+        (
+            record for record in records
+            if record.get("type") == "decision" and record.get("round") == round_id
+        ),
+        None,
+    )
     snapshots = [
         record for record in records
         if record.get("type") == "snapshot" and record.get("round") == round_id
@@ -947,6 +1055,24 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     next_steps = alignment.get("next_steps", [])
     lines.extend(["", "## 下一步", ""])
     lines.extend(f"- {value}" for value in next_steps) if next_steps else lines.append("- 无")
+    lines.extend(["", "## 循环出口", ""])
+    if decision:
+        decision_label = {
+            "exit": "跳出当前循环",
+            "continue": "继续当前主题",
+            "drill_down": "展开下层主题",
+            "park": "暂挂当前主题",
+        }[decision["decision"]]
+        lines.append(f"- 用户决定：{decision_label}")
+        lines.append(f"- 理由：{decision['rationale']}")
+        if decision.get("target_topic"):
+            lines.append(
+                f"- 目标主题：`{decision['target_topic']}` {decision.get('target_title', '')}"
+            )
+        if decision.get("resume_when"):
+            lines.append(f"- 重启条件：{decision['resume_when']}")
+    else:
+        lines.append("- 待用户决定")
     lines.extend(["", "## 冻结快照", ""])
     if snapshots:
         for snapshot in snapshots:
