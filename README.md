@@ -56,6 +56,7 @@ study-arca/
 - [`docs/15-工作区身份工单与方言.md`](docs/15-工作区身份工单与方言.md)
 - [`docs/16-复盘对齐与适配输出.md`](docs/16-复盘对齐与适配输出.md)
 - [`docs/17-研究协作角色.md`](docs/17-研究协作角色.md)
+- [`docs/18-报告编排与输出.md`](docs/18-报告编排与输出.md)
 - [代理技能索引](.agents/README.md)
 - [模板索引](templates/README.md)
 
