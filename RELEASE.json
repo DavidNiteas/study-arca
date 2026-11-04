@@ -2,20 +2,20 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T02:52:32+08:00",
+  "generated_at": "2026-11-05T02:54:12+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "5d74dd711ddc7f9911813193085439e8116fc30a"
+    "commit": "439d3e210fd587d239804685839487695f374c3e"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "175f14b35d24cd5a4cd74d173eaaae4b8a316c10"
+    "commit": "a4e3d7b00d1efe0fc4c6c5324bc439556ee718ce"
   },
-  "tree_sha256": "7c522d5aa9f908da6a85228d495837d53dee87b02b6fa3c52cb8da66ccf82323",
+  "tree_sha256": "37b4f82c1c9acbaefae43401f3c350622cf10142bd6dda67812e8a97c2725e07",
   "files": {
-    ".agents/README.md": "5701761a03a12252c1a6318b4ec37428d23c3bbb4dac2cb81ce48780c0274378",
+    ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "322adde6d5fc3d63709ec0c9609e4f9599b059e41673912dee2f6ca94f2029af",
     ".agents/skills/research-cycle/SKILL.md": "5122b35a565395ce0f131803559287de8b5bac9326e79ae6854aef02e099941e",
     ".agents/skills/workspace-system/SKILL.md": "ef7e5ddb7ced2f89327d52bbd92ace09ddc2161b16edc6f196b47687277a4790",

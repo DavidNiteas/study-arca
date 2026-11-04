@@ -6,7 +6,7 @@
 
 - [research-cycle](skills/research-cycle/SKILL.md)：专业研究循环。
 - [presentation-design](skills/presentation-design/SKILL.md)：研究呈现设计与视觉返修。
-- [workspace-system](skills/workspace-system/SKILL.md)：工作区类型、工单、引用和方言边界。
+- [workspace-system](skills/workspace-system/SKILL.md)：工作区类型、工单、引用、方言和 Synthesis 研究角色边界。
 
 ## 边界
 
