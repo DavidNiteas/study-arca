@@ -4,6 +4,10 @@ search/*/raw/
 # 用户显式生成的压缩包
 publish/packed/**/*.zip
 
+# 用户临时投递区：登记前不入库
+brief/inbox/*
+!brief/inbox/README.md
+
 # 加工缓存与临时文件
 cache/
 tmp/
