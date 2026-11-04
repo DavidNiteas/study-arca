@@ -42,7 +42,7 @@ python scripts/sa.py lint <project-dir>
 - 项目专用脚本只调用 `scripts/sa.py` 的公开接口。
 - 新研究的问题、轮次、讨论和回答以项目 `research/cycle.json` 为准。
 - 现代工作区的类型、工单和方言以 `docs/15-工作区身份工单与方言.md` 为准；用户级 `dialect/` 不进入产品 Git 或发布包。
-- 总结型工作区必须先复盘和对齐，再由冻结快照适配输出；复盘-对齐事件写入 `synthesis/ledger.json`，正式呈现使用 `sa synthesis build --snapshot`，契约见 `docs/16-复盘对齐与适配输出.md`。
+- 总结型工作区必须先复盘和对齐，再由冻结快照适配输出；复盘-对齐事件写入 `synthesis/ledger.json`，`sa synthesis alignment` 生成标准对齐记录，正式呈现使用 `sa synthesis build --snapshot`，契约见 `docs/16-复盘对齐与适配输出.md`。
 - Synthesis 交互采用“管家式协作”：让用户自然口述，代理先复述再问少量高影响问题；用户可回答不知道或跳过，资料可通过 `brief/inbox/` 或路径交接。代理不得审问式追问或擅自扫描路径。
 - 研究和呈现完成不等于打包；只有用户明确要求时才运行 `sa pack`，压缩包只进入项目的 `publish/packed/`。
 

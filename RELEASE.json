@@ -2,29 +2,29 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-04T20:44:09+08:00",
+  "generated_at": "2026-11-04T22:02:28+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "11cfd032834726637cb6398fda254533ad6a269e"
+    "commit": "5fd6b676d460b93a924a83920f1848b2efc4ad55"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "526a3beff1f5a9c0a331d17919a1488c06f7519e"
+    "commit": "cf36abd6bf5ef55cf821cb4cc0aa58516fc67822"
   },
-  "tree_sha256": "9f738362c47dae52d00ab9a57027bf8b23fd5654ec44174c04b1b18fae76689c",
+  "tree_sha256": "27cf5dd148c9622835363f275cf831bf4608d444763cdf66f7c1205d36d914e9",
   "files": {
     ".agents/README.md": "5701761a03a12252c1a6318b4ec37428d23c3bbb4dac2cb81ce48780c0274378",
     ".agents/skills/presentation-design/SKILL.md": "322adde6d5fc3d63709ec0c9609e4f9599b059e41673912dee2f6ca94f2029af",
     ".agents/skills/research-cycle/SKILL.md": "5122b35a565395ce0f131803559287de8b5bac9326e79ae6854aef02e099941e",
-    ".agents/skills/workspace-system/SKILL.md": "73e0b89be230e71e31849e25d357c464c415e8630d7a22f5aaa3a32cd9fb86b8",
+    ".agents/skills/workspace-system/SKILL.md": "28f7afc9fcf9fa08319608aae8273d776536bc72fc51ac584311381cd2822e48",
     ".gitattributes": "53bd72599f9e8cbed776d070e723b4333192ca7b3a3a55c199f7a02f854b923b",
     ".gitignore": "daa9e6806aa5f80d7bfa3870b43ed9d2f74449d6da143403463249e5b391b390",
-    "AGENTS.md": "ffb983c6cf7910c985d72a158c326ec9a57f9d3d03b586a7ae92f4f6cd388dae",
+    "AGENTS.md": "dc38e2bc1aba45d305ecee6bbbde740822f261cffbd7d477b1a045c75d0321fc",
     "HANDOVER.md": "a3b159e4555b73644fc6fdae49d7809428ad2ff51ac73ec6b021646f85dc2065",
     "LICENSE": "c8bc8cd66076ca949cff00108295172db43ddf9c8c606e5e60f2677d19222f6c",
-    "README.md": "6f59622adba05da06e63eba1ae2c866beb059e8660356dc05f6d7f5cb2ff2e48",
+    "README.md": "552e8c0c8fded7a966f45868d6cc79ac539f2ae289e15693f042ade6fe11be1d",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/01-调研治理.md": "ee3e72ec757436d52e1b752120dad74ba496d8cd29699d1aa85f62ffe6734121",
     "docs/02-项目布局.md": "4c089cbaec714be6ba776dc8c1159c21074000cdd1bf2de4d3ba099afc05abe0",
@@ -40,8 +40,8 @@
     "docs/12-系统定位与能力管理.md": "8434f596d8d337cbb7f6a42fd6a399f343efdc1c65afc5fa2966fbfbddd624d8",
     "docs/13-研究分析与论证.md": "55a25b87660cd792d2d7418adf795644a3b0d3f1a9aea6709db55d46a55e1802",
     "docs/14-产品组件与资产.md": "7723e00a8ee6cb43d58be8e4fc0745c64ae0c6d5407c9b7158e9102f93819aca",
-    "docs/15-工作区身份工单与方言.md": "1fd82bf435103066532e69eabd1621b72d1afdbc1990ee5212fed1c0168ed0b6",
-    "docs/16-复盘对齐与适配输出.md": "8e31d7b86eff31e2db7cc4b376c70e42f280d142b42a607b447e3fe057993a93",
+    "docs/15-工作区身份工单与方言.md": "e09bc6bf1ce25c13a5b61b54a4f5d0c048f4820aab2380cf44e78cd3919457c2",
+    "docs/16-复盘对齐与适配输出.md": "1a697ef8ecfb0851a8467ce083042bbe9692a3b47c1032960bec9fbf4106099a",
     "docs/README.md": "bbc6f24d230a512ef43b97c1fa88bb33c1f49605e6818ac4e607de79f32ae610",
     "docs/legacy/01-调研治理.md": "97344b7bc0c7b9b3f2a5fd62bdc5a2b18534c2c386b8a69ba0c4f2ac2e0db964",
     "docs/legacy/04-工作流.md": "57deff08148a5889c035a28940e60105321443dc84573ce4581c5e9b9b0c85e8",
@@ -49,7 +49,7 @@
     "docs/presentation/fungicide-diagrams.md": "248412e8f76f3dfa370db7e5b7a863d209eeeaae828b0ffc563e614feab3da65",
     "scripts/sa.py": "b0719283a712c4db43e2cc002ce7ddf0ee06a457406aae1bff4f969e4a7796df",
     "src/sa/__init__.py": "3617a5e47a55b6c34fd4c114434d03ca8d59ab99b715e840140f5e762a0e4c64",
-    "src/sa/cli.py": "41d115d990cce256b6aae74f6ae61e2445696f1de17a50d28b39ca18bdbe2d44",
+    "src/sa/cli.py": "fed027bcc1dd02dbdc22d4507b52ad16a463a29c07af898c7c3c59daa0555bd0",
     "src/sa/cycle.py": "d2f027c07a855414eddb7835b8df6384001b2a5581a37b8538178f475713a899",
     "src/sa/deck.py": "761d14adda32261cd11a0bd6b3326b6ae8a08f597b505bc7137a6b5b9843c389",
     "src/sa/dialect.py": "56bfef50b82b9ca4bd753260107c3b57fe09d95d95ff89c598b7fac61efc4c78",
@@ -63,7 +63,7 @@
     "src/sa/render.py": "2e6589b21eb6e26ce2d3c7673c1acc1de9e12ede42619db40549275ab114101b",
     "src/sa/report_outputs.py": "b5f230dd37ab111428b0068eab23b289b7f392028e7888072c2d223c81791ed5",
     "src/sa/research_ir.py": "76b5d6eb531ebde9c4b958db0227e23ee63bead996f09afd538ef05dc3167bf7",
-    "src/sa/synthesis.py": "1ddb643319647533e66241384e4f3da4a8a53e95b42b9abdd8c9762d21f5d1d1",
+    "src/sa/synthesis.py": "f8a28b1816c2d2a04e9971081db9358aad8ddb69a475c39b43f2791106b8db97",
     "src/sa/workspace.py": "e911f574cb021984153335f4a251351212b07e45da00772e46c0daa9e4f3601a",
     "templates/README.md": "080e8f90edb111590d10d5726770669ce369e0c5c5ba57eea18013496c756351",
     "templates/dialect/README.md": "0e12af3ca053065428bc16aacc3883d24e3ceb603c920df3c12f06f852e47f94",
@@ -116,8 +116,8 @@
     "templates/report/report.md": "65823dab6080bf968402730b7e560d222fcd2dd6915e9cb571e38be253e464be",
     "templates/research/paper-analysis.md": "59dc695f832f0b1c1bad6303812aaea6634395784ee53644c55d2e6488b7f243",
     "templates/research/records.example.json": "8781ceb8ec5de2b563457fb2b529c4f0a20d36602f7e0dab2c006b5da8a70ee8",
-    "templates/synthesis/README.md": "c3ae5363914e65a24a488649287ae7edeea82971aec18dd32e9207f2efbd4c4a",
-    "templates/synthesis/records.example.json": "e4b3295b2ddf2fb00580c59edfb1579f82aa1085420299cfafbd32308e42cae7"
+    "templates/synthesis/README.md": "da474b623ba9c1f6eefcb4a24a59121b009290aa12f5c09eb6c368ad7d544490",
+    "templates/synthesis/records.example.json": "411f32a2b490eb5aeace5952c551ea200b3b641e923e8a0fb61107d6c2c547c5"
   },
   "note": "work-root/workspace and dialect contain local data and are excluded from manifest hashes"
 }

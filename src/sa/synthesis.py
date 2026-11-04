@@ -20,6 +20,7 @@ CONTENT_LAYERS = {"user_statement", "material", "inference", "unknown"}
 RECORD_TYPES = {"round", "review", "question", "answer", "correction", "alignment", "snapshot"}
 QUESTION_PRIORITIES = {"high", "medium", "low"}
 ANSWER_STATUSES = {"answered", "unknown", "skipped", "deferred"}
+ALIGNMENT_STATUSES = {"confirmed", "disputed", "unknown", "deferred", "out_of_scope"}
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,79}$")
 LAYER_LABELS = {
     "user_statement": "用户陈述",
@@ -268,6 +269,18 @@ def _validate_records(
 
         if kind == "round":
             text(record, "goal", mark)
+            topic_fields = {"topic", "topic_title", "related_work_items"}
+            if topic_fields.intersection(record):
+                if not isinstance(record.get("topic"), str) or not ID_RE.fullmatch(record["topic"]):
+                    errors.append(mark + ".topic 必须是小写 ID")
+                text(record, "topic_title", mark)
+                related = values(record, "related_work_items", mark)
+                if related is not None:
+                    for item_id in related:
+                        if item_id not in work_items:
+                            errors.append(
+                                f"{mark}.related_work_items 引用了不存在的工作主题：{item_id}"
+                            )
         elif kind == "review":
             target = round_ref()
             if target and target["id"] in closed:
@@ -352,8 +365,63 @@ def _validate_records(
                 if missing:
                     errors.append(f"{mark} 仍有问题未回答：{', '.join(missing)}")
             text(record, "summary", mark)
-            for field in ("confirmed", "disputed", "unknown", "next_steps"):
-                values(record, field, mark)
+            if "narrative" in record:
+                text(record, "narrative", mark)
+            items = record.get("items")
+            if items is None:
+                for field in ("confirmed", "disputed", "unknown", "next_steps"):
+                    values(record, field, mark)
+            else:
+                if not isinstance(items, list) or not items:
+                    errors.append(mark + ".items 必须是非空数组")
+                else:
+                    item_ids: set[str] = set()
+                    for item_index, item in enumerate(items):
+                        item_mark = f"{mark}.items[{item_index}]"
+                        if not isinstance(item, dict):
+                            errors.append(item_mark + " 必须是对象")
+                            continue
+                        item_id = item.get("id")
+                        if (
+                            not isinstance(item_id, str)
+                            or not ID_RE.fullmatch(item_id)
+                            or item_id in item_ids
+                        ):
+                            errors.append(item_mark + ".id 非法或重复")
+                        else:
+                            item_ids.add(item_id)
+                        if not isinstance(item.get("statement"), str) or not item["statement"].strip():
+                            errors.append(item_mark + ".statement 必须是非空文本")
+                        if item.get("status") not in ALIGNMENT_STATUSES:
+                            errors.append(item_mark + ".status 非法")
+                        materials = item.get("materials", [])
+                        if not isinstance(materials, list) or any(
+                            not isinstance(value, str) or not value.strip() for value in materials
+                        ):
+                            errors.append(item_mark + ".materials 必须是文本数组")
+                        else:
+                            for material in materials:
+                                if material not in known_materials:
+                                    errors.append(
+                                        f"{item_mark}.materials 引用了不存在的材料：{material}"
+                                    )
+                        related_items = item.get("related_work_items", [])
+                        if not isinstance(related_items, list) or any(
+                            not isinstance(value, str) or not value.strip()
+                            for value in related_items
+                        ):
+                            errors.append(item_mark + ".related_work_items 必须是文本数组")
+                        else:
+                            for work_item in related_items:
+                                if work_item not in work_items:
+                                    errors.append(
+                                        f"{item_mark}.related_work_items 引用了不存在的工作主题：{work_item}"
+                                    )
+                next_steps = record.get("next_steps", [])
+                if not isinstance(next_steps, list) or any(
+                    not isinstance(entry, str) or not entry.strip() for entry in next_steps
+                ):
+                    errors.append(mark + ".next_steps 必须是文本数组")
             if target and target["id"] not in closed:
                 aligned.add(target["id"])
                 closed.add(target["id"])
@@ -581,6 +649,9 @@ def create_snapshot(
             "id": snapshot_id,
             "project": meta.get("id"),
             "round": round_id,
+            "topic": round_record.get("topic"),
+            "topic_title": round_record.get("topic_title") or round_record.get("goal"),
+            "related_work_items": round_record.get("related_work_items", []),
             "label": label.strip(),
             "created_at": _now(),
             "as_of": model["as_of"],
@@ -689,6 +760,9 @@ def synthesis_status(project: Path | str) -> dict:
         ]
         rounds.append({
             "id": round_id,
+            "topic": record.get("topic"),
+            "topic_title": record.get("topic_title") or record["goal"],
+            "related_work_items": record.get("related_work_items", []),
             "goal": record["goal"],
             "status": "closed" if round_id in aligned else "open",
             "reviews": sum(
@@ -715,6 +789,184 @@ def synthesis_status(project: Path | str) -> dict:
         "snapshots": snapshots,
         "records": len(records),
     }
+
+
+def _markdown_cell(value: str) -> str:
+    return " ".join(value.split()).replace("|", "\\|")
+
+
+def _alignment_items(alignment: dict) -> list[dict]:
+    if isinstance(alignment.get("items"), list):
+        return alignment["items"]
+    items: list[dict] = []
+    number = 1
+    for status in ("confirmed", "disputed", "unknown"):
+        for statement in alignment.get(status, []):
+            items.append({
+                "id": f"legacy-{number:04d}",
+                "statement": statement,
+                "status": status,
+                "materials": [],
+                "related_work_items": [],
+            })
+            number += 1
+    return items
+
+
+def render_alignment_record(project: Path | str, round_id: str) -> Path:
+    project = Path(project).resolve()
+    errors = validate_synthesis(project)
+    if errors:
+        raise ProjectError("\n".join(errors))
+    data = _load_ledger(project)
+    records = data["records"]
+    round_record = next(
+        (
+            record for record in records
+            if record.get("type") == "round" and record.get("id") == round_id
+        ),
+        None,
+    )
+    if not round_record:
+        raise ProjectError(f"round 不存在：{round_id}")
+    alignment = next(
+        (
+            record for record in records
+            if record.get("type") == "alignment" and record.get("round") == round_id
+        ),
+        None,
+    )
+    if not alignment:
+        raise ProjectError("轮次尚未完成对齐，不能生成正式 alignment 记录")
+    round_records = [
+        record for record in records
+        if record.get("round") == round_id
+    ]
+    reviews = [record for record in round_records if record.get("type") == "review"]
+    questions = [record for record in round_records if record.get("type") == "question"]
+    answers = {
+        record["question"]: record
+        for record in round_records
+        if record.get("type") == "answer"
+    }
+    corrections = [
+        record for record in round_records if record.get("type") == "correction"
+    ]
+    snapshots = [
+        record for record in records
+        if record.get("type") == "snapshot" and record.get("round") == round_id
+    ]
+    material_ids = sorted({
+        material
+        for record in [round_record, *reviews, *questions, *answers.values(), *corrections]
+        for material in record.get("materials", [])
+    })
+    topic_title = round_record.get("topic_title") or round_record.get("goal") or round_id
+    topic = round_record.get("topic")
+    lines = [
+        f"# Alignment {round_id} · {topic_title}",
+        "",
+        "> 本文件由 `sa synthesis alignment` 从 `synthesis/ledger.json` 生成，请勿手工编辑。",
+        "",
+        "## 元信息",
+        "",
+        f"- 项目：`{data['project']}`",
+        f"- 轮次：`{round_id}`",
+    ]
+    if topic:
+        lines.append(f"- 主题 ID：`{topic}`")
+    lines.extend([
+        f"- 相关工作主题：{'、'.join(f'`{value}`' for value in round_record.get('related_work_items', [])) or '无'}",
+        f"- 对齐模型摘要：`{alignment.get('model_sha256', '')}`",
+        f"- 使用材料：{'、'.join(f'`{value}`' for value in material_ids) or '无'}",
+        "",
+        "## 完整叙述",
+        "",
+        alignment.get("narrative") or alignment.get("summary", ""),
+        "",
+        "## 复盘摘要",
+        "",
+    ])
+    if reviews:
+        lines.extend(f"- {review['summary']}" for review in reviews)
+    else:
+        lines.append("- 未记录复盘摘要")
+    lines.extend(["", "## 问题与回答", ""])
+    if questions:
+        lines.extend(["| 问题 | 优先级 | 回答状态 | 回答摘要 |", "|---|---|---|---|"])
+        for question in questions:
+            answer = answers.get(question["id"], {})
+            lines.append(
+                "| "
+                + " | ".join([
+                    _markdown_cell(question["text"]),
+                    _markdown_cell(question["priority"]),
+                    _markdown_cell(answer.get("status", "unanswered")),
+                    _markdown_cell(answer.get("summary", "")),
+                ])
+                + " |"
+            )
+    else:
+        lines.append("- 本轮没有登记问题")
+    lines.extend(["", "## 修正记录", ""])
+    if corrections:
+        for correction in corrections:
+            lines.append(
+                f"- `{correction['target']}`：{correction['summary']}"
+            )
+    else:
+        lines.append("- 无修正记录")
+    lines.extend(["", "## 对齐结论", ""])
+    items = _alignment_items(alignment)
+    if items:
+        lines.extend([
+            "| 条目 | 判断 | 结论 | 工作主题 | 材料 |",
+            "|---|---|---|---|---|",
+        ])
+        labels = {
+            "confirmed": "已确认",
+            "disputed": "有争议",
+            "unknown": "未知",
+            "deferred": "暂缓",
+            "out_of_scope": "不属于本轮",
+        }
+        for item in items:
+            lines.append(
+                "| "
+                + " | ".join([
+                    _markdown_cell(item["id"]),
+                    labels[item["status"]],
+                    _markdown_cell(item["statement"]),
+                    _markdown_cell("、".join(item.get("related_work_items", []))),
+                    _markdown_cell("、".join(item.get("materials", []))),
+                ])
+                + " |"
+            )
+    else:
+        lines.append("- 无结构化对齐条目")
+    next_steps = alignment.get("next_steps", [])
+    lines.extend(["", "## 下一步", ""])
+    lines.extend(f"- {value}" for value in next_steps) if next_steps else lines.append("- 无")
+    lines.extend(["", "## 冻结快照", ""])
+    if snapshots:
+        for snapshot in snapshots:
+            snapshot_link = Path(snapshot["path"]).relative_to("synthesis").as_posix()
+            lines.append(
+                f"- `{snapshot['id']}`：{snapshot['label']}，"
+                f"[读取快照](../{snapshot_link})"
+            )
+    else:
+        lines.append("- 尚未冻结快照")
+    lines.append("")
+    output = project / "synthesis/alignments" / f"{round_id}.md"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    tmp = output.with_suffix(".tmp")
+    try:
+        tmp.write_text("\n".join(lines), encoding="utf-8")
+        os.replace(tmp, output)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return output
 
 
 def _bullets(values: list[str]) -> str:

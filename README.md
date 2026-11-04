@@ -19,7 +19,7 @@ python scripts/sa.py selftest
 - Synthesis 的四阶段业务：复盘、对齐、复盘-对齐循环、按受众适配输出。
 - 工作区本地工单、用户材料清单、物化引用和作用域方言。
 - Program superproject、Git submodule pin 与显式 cloneable 检查。
-- Synthesis 工作模型、复盘-对齐记录、冻结快照追踪与 HTML/Word 汇总报告生成。
+- Synthesis 工作模型、复盘-对齐记录、标准对齐产物、冻结快照追踪与 HTML/Word 汇总报告生成。
 - 来源信封、claim/fact/conflict 台账与置信度校验。
 - Markdown 报告、自包含 HTML 和 Word 输出。
 - 研究呈现设计方法、内容/布局 LR 与视觉返修流程。

@@ -29,6 +29,7 @@ from .synthesis import (
     build_synthesis_report,
     create_snapshot,
     init_synthesis,
+    render_alignment_record,
     synthesis_status,
     validate_synthesis,
 )
@@ -414,6 +415,11 @@ def cmd_synthesis(args) -> int:
         if not args.id or not args.label or not args.round:
             raise ProjectError("synthesis snapshot 需要 --id、--label 和 --round")
         print(create_snapshot(project, args.id, args.label, args.round))
+        return 0
+    if args.action == "alignment":
+        if not args.round:
+            raise ProjectError("synthesis alignment 需要 --round")
+        print(render_alignment_record(project, args.round))
         return 0
     if args.action == "build":
         outputs = build_synthesis_report(
@@ -1109,7 +1115,7 @@ def build_parser() -> argparse.ArgumentParser:
     synthesis = sub.add_parser("synthesis", help="总结型工作区模型、复盘对齐与报告")
     synthesis.add_argument(
         "action",
-        choices=["init", "validate", "status", "apply", "snapshot", "build"],
+        choices=["init", "validate", "status", "apply", "snapshot", "alignment", "build"],
     )
     synthesis.add_argument("project")
     synthesis.add_argument("--file")

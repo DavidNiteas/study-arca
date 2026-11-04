@@ -2,6 +2,9 @@
   {
     "id": "r-0001",
     "type": "round",
+    "topic": "current-work",
+    "topic_title": "当前工作",
+    "related_work_items": ["w-0001"],
     "goal": "建立当前工作的第一版共同理解"
   },
   {
@@ -43,9 +46,23 @@
     "type": "alignment",
     "round": "r-0001",
     "summary": "用户已确认当前工作状态和主要缺口。",
-    "confirmed": ["工作仍在进行"],
-    "disputed": [],
-    "unknown": ["预计完成时间"],
+    "narrative": "用户确认工作仍在进行；预计完成时间尚未提供。",
+    "items": [
+      {
+        "id": "ai-0001",
+        "statement": "工作仍在进行",
+        "status": "confirmed",
+        "materials": ["u-0001"],
+        "related_work_items": ["w-0001"]
+      },
+      {
+        "id": "ai-0002",
+        "statement": "预计完成时间",
+        "status": "unknown",
+        "materials": [],
+        "related_work_items": ["w-0001"]
+      }
+    ],
     "next_steps": ["补充排期信息"]
   }
 ]
