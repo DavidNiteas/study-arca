@@ -69,7 +69,7 @@ python scripts/sa.py document build <project> --plan <document-plan.json> --outp
 - 每页数据来自 `document.json` / `facts.json`；口径与期间放页脚。
 - **不设“建议页”**：改为“选项与条件页”——对称呈现路径、成立条件、代价、反证。
 - 默认依据 [设计方法与模式](11-PPT设计方法与模式.md) 原创构图，先写设计意图，再落布局 LR。用户明确采用模板时，再让用户看实际预览选择，不默认进入选模板流程。
-- 使用 `gorden-ppt-skill` 时遵守其更新、字数与出框规则；模板仅供个人学习研究。
+- PPT 设计与构建只使用 Study Arca 自身规范与工具链：`docs/11`、`presentation-design`、ReportDocument、DeckPlan/RenderLayout 和 `sa deck`。不引入第三方 PPT 技能作为中间层或硬性流程；用户主动指定自己的模板时，按用户要求处理。
 - 当前项目级试点为农用杀菌剂演示 v11.1（67 页，DeckPlan/RenderLayout、原生图解、PowerPoint 实际预览与看图返修）；可迁移经验见 [案例](presentation/fungicide-diagrams.md)。项目产物留在独立仓，本路径不是框架内置资源。
 - 前一版：`v5.0` 为模板拼页版，保留对比。旧 `sa render pptx` 入口仍不提供；PPT 统一走独立 Deck 流程。
 - 通用 `sa deck convert|validate|build` 已提供 DeckPlan/RenderLayout 到原生 PPTX 的可复用路径。

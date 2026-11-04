@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T03:38:19+08:00",
+  "generated_at": "2026-11-05T04:59:32+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "a06ab160bf13a4ab502c23eab8dedc91d0fefc31"
+    "commit": "fac5854a7f0fae6bd972dbdae671dc429be7475c"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "fa7216fb73a743c9043f61bc9b7d9d1faf290e91"
+    "commit": "024ab196bfaf2555f5d5c1a68b3ed34928f1edd9"
   },
-  "tree_sha256": "0fd7b39d0a4e0ac35e9010c00cf2de703c5a80b529841a244f3664b5cf85f092",
+  "tree_sha256": "44a368b1a95c3c38ee94ac38ec09c8d83c221d61e60d99fea4189a8f764ec08c",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "322adde6d5fc3d63709ec0c9609e4f9599b059e41673912dee2f6ca94f2029af",
@@ -32,7 +32,7 @@
     "docs/04-工作流.md": "be11116b8ea9532a0f889dbcc12b559de4af4cb5419901114bf6a8d127b61779",
     "docs/05-报告规范.md": "ab76362745f37342eafd88fc042e06129c75829f0d6bc2c7f7afb5c7693d6f24",
     "docs/06-数据源地图.md": "e14d88b063836b1d9beef71de20014f9aa29cbccd2ba26064d8c9cecd25e7c73",
-    "docs/07-交付与PPT.md": "ff7ecd93bf0bebaca838670d27da44477e318c53385eac016805279ef37a8d41",
+    "docs/07-交付与PPT.md": "a820491207e22c3ef4beaa141d274010f9763e5f809d061d75da441e8d633c45",
     "docs/08-调研军火库.md": "fac6204053c507bc3f65833eda489bafd5338386d9c17848aacf396f0ba5fb07",
     "docs/09-专业调研循环.md": "92df4f8aac5100e7688cf3e297afc01271c89e6eb016794f10dcfc9d5e3ea4d8",
     "docs/10-代理工作协议.md": "33de093ff09c0b3befdc428bd3b36c4fb54a1ed9ef173ba5546c05afc32ef092",
