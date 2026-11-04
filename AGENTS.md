@@ -17,6 +17,7 @@
 | 理解能力边界 | `docs/12-系统定位与能力管理.md` |
 | 理解技能、模板、规范与代码的分工 | `docs/14-产品组件与资产.md`、`.agents/README.md`、`templates/README.md` |
 | 理解工作区类型、本地工单、引用和方言 | `docs/15-工作区身份工单与方言.md` |
+| 执行总结、复盘、对齐或多受众报告 | `docs/16-复盘对齐与适配输出.md` |
 
 ## 中立性
 
@@ -41,6 +42,7 @@ python scripts/sa.py lint <project-dir>
 - 项目专用脚本只调用 `scripts/sa.py` 的公开接口。
 - 新研究的问题、轮次、讨论和回答以项目 `research/cycle.json` 为准。
 - 现代工作区的类型、工单和方言以 `docs/15-工作区身份工单与方言.md` 为准；用户级 `dialect/` 不进入产品 Git 或发布包。
+- 总结型工作区必须先复盘和对齐，再由冻结快照适配输出；当前 `sa synthesis build` 不等于完整复盘循环已实现，契约见 `docs/16-复盘对齐与适配输出.md`。
 - 研究和呈现完成不等于打包；只有用户明确要求时才运行 `sa pack`，压缩包只进入项目的 `publish/packed/`。
 
 ## 发布仓边界

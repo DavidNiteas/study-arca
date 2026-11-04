@@ -16,6 +16,7 @@ python scripts/sa.py selftest
 
 - 五域研究循环：立项、调研、分析、讨论、呈现。
 - 两类工作区身份：`research` 与 `synthesis`，身份写入工作区元信息。
+- Synthesis 的四阶段业务：复盘、对齐、复盘-对齐循环、按受众适配输出。
 - 工作区本地工单、用户材料清单、物化引用和作用域方言。
 - Program superproject、Git submodule pin 与显式 cloneable 检查。
 - Synthesis 工作模型、材料追溯与 HTML/Word 汇总报告生成。
@@ -50,6 +51,7 @@ study-arca/
 - [`docs/10-代理工作协议.md`](docs/10-代理工作协议.md)
 - [`docs/14-产品组件与资产.md`](docs/14-产品组件与资产.md)
 - [`docs/15-工作区身份工单与方言.md`](docs/15-工作区身份工单与方言.md)
+- [`docs/16-复盘对齐与适配输出.md`](docs/16-复盘对齐与适配输出.md)
 - [代理技能索引](.agents/README.md)
 - [模板索引](templates/README.md)
 
