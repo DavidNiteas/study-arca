@@ -25,8 +25,11 @@ from .program import (
 )
 from .render import build_document, render_html, write_document
 from .synthesis import (
+    apply_records as apply_synthesis_records,
     build_synthesis_report,
+    create_snapshot,
     init_synthesis,
+    synthesis_status,
     validate_synthesis,
 )
 from .project import (
@@ -379,8 +382,45 @@ def cmd_synthesis(args) -> int:
             print(f"[ERROR] {message}")
         print(f"synthesis：{len(errors)} error")
         return 1 if errors else 0
+    if args.action == "status":
+        value = synthesis_status(project)
+        if args.json:
+            print(json.dumps(value, ensure_ascii=False, indent=2))
+        else:
+            print(f"当前模型：{value['model_sha256']}")
+            for round_record in value["rounds"]:
+                print(
+                    f"{round_record['id']}  {round_record['status']:<6}  "
+                    f"{round_record['goal']}"
+                )
+                for question in round_record["questions"]:
+                    print(
+                        f"  {question['id']}  {question['priority']:<6}  "
+                        f"{question['answer']:<10}  {question['text']}"
+                    )
+            for snapshot in value["snapshots"]:
+                print(f"snapshot {snapshot['id']}  {snapshot['round']}  {snapshot['label']}")
+        return 0
+    if args.action == "apply":
+        if not args.file:
+            raise ProjectError("synthesis apply 需要 --file JSON 记录文件")
+        try:
+            records = json.loads(Path(args.file).read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError) as exc:
+            raise ProjectError(f"无法读取 synthesis 记录：{exc}") from exc
+        print(f"已追加 {apply_synthesis_records(project, records)} 条记录")
+        return 0
+    if args.action == "snapshot":
+        if not args.id or not args.label or not args.round:
+            raise ProjectError("synthesis snapshot 需要 --id、--label 和 --round")
+        print(create_snapshot(project, args.id, args.label, args.round))
+        return 0
     if args.action == "build":
-        outputs = build_synthesis_report(project, docx=args.docx)
+        outputs = build_synthesis_report(
+            project,
+            docx=args.docx,
+            snapshot_id=args.snapshot,
+        )
         for kind, path in outputs.items():
             print(f"{kind}: {path}")
         return 0
@@ -723,6 +763,57 @@ def cmd_selftest(args) -> int:
             and synthesis_lint.ok,
             synthesis_lint.errors,
         )
+        synthesis_source = root / "synthesis-narration.md"
+        synthesis_source.write_text("正在整理工作总结。\n", encoding="utf-8")
+        _, material = add_provided_input(
+            synthesis,
+            synthesis_source,
+            role="work_record",
+            authority="first_person",
+            verification="self_reported",
+        )
+        synthesis_model_path = synthesis / "work-model/model.json"
+        synthesis_model = json.loads(synthesis_model_path.read_text(encoding="utf-8"))
+        synthesis_model["items"] = [{
+            "id": "w-0001",
+            "title": "工作总结",
+            "goal": "完成复盘",
+            "status": "active",
+            "progress": [],
+            "outcomes": [],
+            "blockers": [],
+            "next_steps": [],
+            "materials": [material["id"]],
+        }]
+        synthesis_model_path.write_text(
+            json.dumps(synthesis_model, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        apply_synthesis_records(synthesis, [
+            {"id": "r-0001", "type": "round", "goal": "理解当前工作"},
+            {
+                "id": "s-0001", "type": "review", "round": "r-0001",
+                "summary": "正在整理工作总结。", "changes": ["w-0001"],
+                "gaps": [], "materials": [material["id"]],
+            },
+            {
+                "id": "g-0001", "type": "alignment", "round": "r-0001",
+                "summary": "用户确认当前理解。", "confirmed": ["正在整理工作总结"],
+                "disputed": [], "unknown": [], "next_steps": [],
+            },
+        ])
+        synthesis_snapshot = create_snapshot(
+            synthesis,
+            "snap-0001",
+            "示例快照",
+            "r-0001",
+        )
+        _check(
+            results,
+            "复盘对齐与快照冻结",
+            synthesis_snapshot.is_file()
+            and synthesis_status(synthesis)["rounds"][0]["status"] == "closed",
+        )
         demo_program = init_program(root / "program-demo", "prog-demo", "示例 Program")
         program_errors, _ = check_program(demo_program)
         _check(
@@ -1015,10 +1106,19 @@ def build_parser() -> argparse.ArgumentParser:
     ref.add_argument("--search-root")
     ref.set_defaults(func=cmd_ref)
 
-    synthesis = sub.add_parser("synthesis", help="总结型工作区模型与报告")
-    synthesis.add_argument("action", choices=["init", "validate", "build"])
+    synthesis = sub.add_parser("synthesis", help="总结型工作区模型、复盘对齐与报告")
+    synthesis.add_argument(
+        "action",
+        choices=["init", "validate", "status", "apply", "snapshot", "build"],
+    )
     synthesis.add_argument("project")
+    synthesis.add_argument("--file")
+    synthesis.add_argument("--id")
+    synthesis.add_argument("--label")
+    synthesis.add_argument("--round")
+    synthesis.add_argument("--snapshot")
     synthesis.add_argument("--docx", action="store_true")
+    synthesis.add_argument("--json", action="store_true")
     synthesis.set_defaults(func=cmd_synthesis)
 
     source = sub.add_parser("source", help="新建来源信封（单条或批量）")

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "r-0001",
+    "type": "round",
+    "goal": "建立当前工作的第一版共同理解"
+  },
+  {
+    "id": "s-0001",
+    "type": "review",
+    "round": "r-0001",
+    "summary": "代理对当前材料的复述与结构化理解。",
+    "changes": ["w-0001"],
+    "gaps": ["某项关键状态仍待确认"],
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "q-0001",
+    "type": "question",
+    "round": "r-0001",
+    "text": "这项工作当前是否已经完成？",
+    "priority": "high",
+    "why": "该答案会改变工作状态和后续判断"
+  },
+  {
+    "id": "a-0001",
+    "type": "answer",
+    "round": "r-0001",
+    "question": "q-0001",
+    "status": "answered",
+    "summary": "尚未完成。",
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "c-0001",
+    "type": "correction",
+    "round": "r-0001",
+    "target": "w-0001",
+    "summary": "根据用户回答修正了工作状态。",
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "g-0001",
+    "type": "alignment",
+    "round": "r-0001",
+    "summary": "用户已确认当前工作状态和主要缺口。",
+    "confirmed": ["工作仍在进行"],
+    "disputed": [],
+    "unknown": ["预计完成时间"],
+    "next_steps": ["补充排期信息"]
+  }
+]

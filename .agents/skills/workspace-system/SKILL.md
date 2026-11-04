@@ -14,7 +14,7 @@ description: 在 Study Arca 中识别工作区类型、创建本地工单、登�
 5. Core 硬约束不可被 dialect 覆盖。工作区方言随 workspace 迁移；用户级 `study-arca/dialect/` 不进入 Git 或发布包。影响正式结果的用户方言依赖必须物化到工作区。
 6. 不自动启用远端、不自动 push、不自动打包。远端同步范围和打包都由用户显式要求。
 7. Program 只保存子节点引用和 Git pin，不保存业务事实；默认 `local`，用户启用远端后才进行 cloneable 检查。
-8. Synthesis 按 `docs/16-复盘对齐与适配输出.md` 的管家式协作契约执行：接住用户自然口述，先复述再提出少量高影响问题，允许用户跳过或回答不知道；维护 `work-model/model.json`，再冻结工作快照，最后让各格式消费快照。不得从聊天记忆补写模型没有的工作成果，也不得把当前 `sa synthesis build` 视为完整循环已经实现。
+8. Synthesis 按 `docs/16-复盘对齐与适配输出.md` 的管家式协作契约执行：接住用户自然口述，先复述再提出少量高影响问题，允许用户跳过或回答不知道；通过 `sa synthesis apply` 追加复盘-对齐事件，维护 `work-model/model.json`，关闭轮次后用 `sa synthesis snapshot` 冻结，正式呈现用 `sa synthesis build --snapshot`。不得从聊天记忆补写模型没有的工作成果。
 9. 用户可把材料放入 `brief/inbox/` 或直接提供路径。`brief/inbox/` 只作暂存，不进入事实模型；代理先盘点并与用户确认，再通过 `sa input add` 登记到 `brief/provided/`。不得擅自扫描未授权路径或修改原件。
 10. 工作结束运行相关 `sa lint` 和项目检查，交接工作区类型、工单 ID、引用 ID、方言依赖和限制。
 

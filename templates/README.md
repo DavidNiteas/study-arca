@@ -11,6 +11,7 @@
 | [ppt/](ppt/) | PPT 大纲、设计意图、设计案例记录 |
 | [research/](research/) | 关键论文分析与研究循环记录样例 |
 | [output/](output/) | 输出请求、三种 Output Plan、Render Layout 与登记记录样例 |
+| [synthesis/](synthesis/) | 复盘-对齐轮次、问题、回答、修正和对齐记录样例 |
 | [dialect/](dialect/) | 用户级本地方言的起始清单；不会被复制进产品发布历史 |
 | [program/](program/) | Program superproject 的最小清单与操作说明 |
 
