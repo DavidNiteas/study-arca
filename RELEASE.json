@@ -2,7 +2,7 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T03:00:51+08:00",
+  "generated_at": "2026-11-05T03:13:30+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
@@ -11,9 +11,9 @@
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "908aa9f89bb8221f9d35fedef97d9d14159b35d3"
+    "commit": "e1c2bbab4c40f79337c00b0bb85ec55a0e5dc703"
   },
-  "tree_sha256": "2828d59463f703dce31c5e386570519e90ab8d9f8dd35cdd006f96a9d7da0709",
+  "tree_sha256": "37500be592c9f73dd2616cf91bdb474831ac44e9ca8e12443f0f84becfdfdccb",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "322adde6d5fc3d63709ec0c9609e4f9599b059e41673912dee2f6ca94f2029af",
@@ -41,7 +41,7 @@
     "docs/13-研究分析与论证.md": "55a25b87660cd792d2d7418adf795644a3b0d3f1a9aea6709db55d46a55e1802",
     "docs/14-产品组件与资产.md": "64b2123fb2658c779422fe16e75d845ec1fddc258b40b5149c8cb1d0b7028e31",
     "docs/15-工作区身份工单与方言.md": "c977a195890d36382e1f3c2e6df787abe0dea6c998eec45be1b897d21ee4f530",
-    "docs/16-复盘对齐与适配输出.md": "dd1ad014c8668d6186d5591e862e16104479716f78ae6a6c2c51cb15979e58e8",
+    "docs/16-复盘对齐与适配输出.md": "9793a4391e00007bf49459f4344cff578ad58df3584491a93823f5e0c117c697",
     "docs/17-研究协作角色.md": "914bdc6587cf3f5827bd6caa9d2cd639a39d4c27f32046df7aba9217d3a39078",
     "docs/README.md": "115ca2e525d37c38a6b0deefa45a10dc10fb1222de1ab377c8ea419b8f69b696",
     "docs/legacy/01-调研治理.md": "97344b7bc0c7b9b3f2a5fd62bdc5a2b18534c2c386b8a69ba0c4f2ac2e0db964",
@@ -64,7 +64,7 @@
     "src/sa/render.py": "2e6589b21eb6e26ce2d3c7673c1acc1de9e12ede42619db40549275ab114101b",
     "src/sa/report_outputs.py": "b5f230dd37ab111428b0068eab23b289b7f392028e7888072c2d223c81791ed5",
     "src/sa/research_ir.py": "76b5d6eb531ebde9c4b958db0227e23ee63bead996f09afd538ef05dc3167bf7",
-    "src/sa/synthesis.py": "a5c60ba7b128e22dff70a9b4dc18030be5b84de2a49aec05a3e5569ecfeda1c5",
+    "src/sa/synthesis.py": "63d7fda4d725fbf5bd51a4e5c2edc755746241a4687910a9f0f9648ecccc9207",
     "src/sa/workspace.py": "49c3e3d740f537f53261bf9a5acff548fcdd35ea863dc53cfbbe7953aa197e27",
     "templates/README.md": "858f968d91275d77b2804024be5fb51ad3fc720a3d46682c70ebef7c3353c5b1",
     "templates/dialect/README.md": "80e0b730ca8551321ad8edb98a374912118bfa4165a99651998764887d984626",
@@ -119,7 +119,7 @@
     "templates/research/records.example.json": "8781ceb8ec5de2b563457fb2b529c4f0a20d36602f7e0dab2c006b5da8a70ee8",
     "templates/synthesis/README.md": "2193c61e3c52aff771a8416b3c0034aac163536008c9477402d246822c2aed12",
     "templates/synthesis/decision.example.json": "e4e4e1006b5086e475ae55e10f446df6079f850df8fbcbedb11348e4293a8344",
-    "templates/synthesis/design.example.json": "daedd7f0d4d3be7eb9554b95ac020656e9811e6140a0851fe406b0785f2e662d",
+    "templates/synthesis/design.example.json": "d6fb72b35486e48b531c1f4a46767f25136ba6a6797884f34820a9ba5a2ec876",
     "templates/synthesis/records.example.json": "76b97d4300d1806c3e66bf26c27ce4c970c38f33ae5a5465358e31f2f2f812b0"
   },
   "note": "work-root/workspace and dialect contain local data and are excluded from manifest hashes"

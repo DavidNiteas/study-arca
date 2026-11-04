@@ -581,6 +581,20 @@ def _validate_records(
             if record.get("decided_by") != "principal":
                 errors.append(mark + ".decided_by 必须是 principal")
             text(record, "rationale", mark)
+            selected_options = values(record, "selected_options", mark) or []
+            if record.get("outcome") == "accepted" and not selected_options:
+                errors.append(mark + ".selected_options 在 accepted 时不可为空")
+            if proposal:
+                valid_options = {
+                    option.get("id")
+                    for option in proposal.get("options", [])
+                    if isinstance(option, dict)
+                }
+                for option_id in selected_options:
+                    if option_id not in valid_options:
+                        errors.append(
+                            f"{mark}.selected_options 引用了提案中不存在的选项：{option_id}"
+                        )
             materials = values(record, "materials", mark, required=True)
             if materials is not None:
                 for material in materials:
@@ -1508,8 +1522,8 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     lines.extend(["", "## 设计记录", ""])
     if design_proposals:
         lines.extend([
-            "| 提案 | 标题 | 提出者 | 有效状态 | 依据 |",
-            "|---|---|---|---|---|",
+            "| 提案 | 标题 | 提出者 | 有效状态 | 选择 | 依据 |",
+            "|---|---|---|---|---|---|",
         ])
         superseded = {
             old_id
@@ -1533,6 +1547,11 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
                     _markdown_cell(proposal["title"]),
                     _markdown_cell(proposal["proposed_by"]),
                     _markdown_cell(status),
+                    _markdown_cell(
+                        "、".join(design_decision.get("selected_options", []))
+                        if design_decision
+                        else ""
+                    ),
                     _markdown_cell(
                         design_decision.get("rationale", "")
                         if design_decision
@@ -1733,8 +1752,8 @@ def render_summary_markdown(
         lines.extend([
             "## 设计基线",
             "",
-            "| 提案 | 标题 | 状态 | 决定依据 |",
-            "|---|---|---|---|",
+            "| 提案 | 标题 | 状态 | 选择 | 决定依据 |",
+            "|---|---|---|---|---|",
         ])
         if proposals:
             for proposal in proposals:
@@ -1742,10 +1761,11 @@ def render_summary_markdown(
                 lines.append(
                     f"| {proposal['id']} | {proposal['title']} | "
                     f"{proposal.get('effective_status', 'proposed')} | "
+                    f"{'、'.join(decision.get('selected_options', []))} | "
                     f"{decision.get('rationale', '')} |"
                 )
         else:
-            lines.append("| 无 | 无 | proposed | 尚未形成设计提案 |")
+            lines.append("| 无 | 无 | proposed | 无 | 尚未形成设计提案 |")
         lines.append("")
         artifacts = [
             artifact
@@ -1851,16 +1871,17 @@ def build_synthesis_document(
         design_blocks = [{
             "type": "table",
             "layer": "inference",
-            "columns": ["提案", "标题", "状态", "决定依据"],
+            "columns": ["提案", "标题", "状态", "选择", "决定依据"],
             "rows": [
                 [
                     proposal["id"],
                     proposal["title"],
                     proposal.get("effective_status", "proposed"),
+                    "、".join((proposal.get("decision") or {}).get("selected_options", [])),
                     (proposal.get("decision") or {}).get("rationale", ""),
                 ]
                 for proposal in proposals
-            ] or [["无", "无", "proposed", "尚未形成设计提案"]],
+            ] or [["无", "无", "proposed", "无", "尚未形成设计提案"]],
         }]
         artifacts = [
             artifact

@@ -89,6 +89,7 @@
     "proposal": "dp-0001",
     "outcome": "accepted",
     "decided_by": "principal",
+    "selected_options": ["option-a"],
     "rationale": "首席研究员接受该设计的理由",
     "conditions": ["接受条件"],
     "materials": ["u-0001"]
