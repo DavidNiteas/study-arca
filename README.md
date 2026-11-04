@@ -16,15 +16,16 @@ python scripts/sa.py selftest
 
 - 五域研究循环：立项、调研、分析、讨论、呈现。
 - 两类工作区身份：`research` 与 `synthesis`，身份写入工作区元信息。
-- Synthesis 的四阶段业务：复盘、对齐、复盘-对齐循环、按受众适配输出。
-- 工作区本地工单、用户材料清单、物化引用和作用域方言。
+- Synthesis 的双过程业务：复盘、设计与可混合循环，完成对齐后按受众适配输出。
+- 工作区本地工单、首席研究员材料清单、物化引用和作用域方言。
 - Program superproject、Git submodule pin 与显式 cloneable 检查。
 - Synthesis 工作模型、复盘-对齐记录、标准对齐产物、冻结快照追踪与 HTML/Word 汇总报告生成。
-- Synthesis 主题树与用户控制的循环出口：继续、下钻、暂挂或跳出。
+- Synthesis 主题树与首席研究员控制的循环出口：继续、下钻、暂挂或跳出。
+- 首席研究员、主代理双身份、研究顾问委员会与研究专员的研究协作角色。
 - 来源信封、claim/fact/conflict 台账与置信度校验。
 - Markdown 报告、自包含 HTML 和 Word 输出。
 - 研究呈现设计方法、内容/布局 LR 与视觉返修流程。
-- 按版本发布，并在用户明确要求时显式打包到 `publish/packed/`。
+- 按版本发布，并在首席研究员明确要求时显式打包到 `publish/packed/`。
 - `research-cycle`、`presentation-design` 等代理工作技能。
 
 ## 目录
@@ -53,6 +54,7 @@ study-arca/
 - [`docs/14-产品组件与资产.md`](docs/14-产品组件与资产.md)
 - [`docs/15-工作区身份工单与方言.md`](docs/15-工作区身份工单与方言.md)
 - [`docs/16-复盘对齐与适配输出.md`](docs/16-复盘对齐与适配输出.md)
+- [`docs/17-研究协作角色.md`](docs/17-研究协作角色.md)
 - [代理技能索引](.agents/README.md)
 - [模板索引](templates/README.md)
 

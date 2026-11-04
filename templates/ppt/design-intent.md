@@ -23,6 +23,6 @@
 
 - 预览/输出版本或哈希；问题页码/元素 ID：
 - 观察 → 修改 → 重渲染后的结果：
-- self/independent、用户反馈分别记录；未决问题与后续行动：
+- self/independent、首席研究员反馈分别记录；未决问题与后续行动：
 
 冻结：按 docs/09 的 cycle capture 保存本文件；其 artifact ID 放入相关 outcome/answer.materials。不要给 presentation 随意增加未支持字段。

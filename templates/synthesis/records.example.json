@@ -38,15 +38,15 @@
     "type": "correction",
     "round": "r-0001",
     "target": "w-0001",
-    "summary": "根据用户回答修正了工作状态。",
+    "summary": "根据首席研究员回答修正了工作状态。",
     "materials": ["u-0001"]
   },
   {
     "id": "g-0001",
     "type": "alignment",
     "round": "r-0001",
-    "summary": "用户已确认当前工作状态和主要缺口。",
-    "narrative": "用户确认工作仍在进行；预计完成时间尚未提供。",
+    "summary": "首席研究员已确认当前工作状态和主要缺口。",
+    "narrative": "首席研究员确认工作仍在进行；预计完成时间尚未提供。",
     "items": [
       {
         "id": "ai-0001",
