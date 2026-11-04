@@ -49,6 +49,7 @@ python scripts/sa.py lint <project-dir>
 - 对齐后的循环出口由首席研究员决定；代理不得自行选择继续、下钻、暂挂或跳出。父主题可以派生子主题，子轮次必须引用父主题及父快照。
 - Synthesis 交互先接住首席研究员的自然口述，主代理复述后再问少量高影响问题；首席研究员可回答不知道或跳过，资料可通过 `brief/inbox/` 或路径交接。代理不得审问式追问或擅自扫描路径。
 - 研究和呈现完成不等于打包；只有首席研究员明确要求时才运行 `sa pack`，压缩包只进入项目的 `publish/packed/`。
+- 除兼容工作汇总外，正式多受众报告使用 `sa report`；DOCX、HTML、PPT 必须从同一 ReportPlan/ReportDocument 派生，并进入统一输出登记。
 
 ## 发布仓边界
 

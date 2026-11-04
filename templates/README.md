@@ -7,7 +7,7 @@
 | 目录 | 内容 |
 |---|---|
 | [project/](project/) | 新调研项目的完整初始目录、元数据、台账和发布/打包骨架 |
-| [report/](report/) | Markdown 报告初稿结构 |
+| [report/](report/) | Markdown 报告初稿与独立报告 `sa.report-plan/1` 起始结构 |
 | [ppt/](ppt/) | PPT 大纲、设计意图、设计案例记录 |
 | [research/](research/) | 关键论文分析与研究循环记录样例 |
 | [output/](output/) | 输出请求、三种 Output Plan、Render Layout 与登记记录样例 |
@@ -22,4 +22,5 @@
 - `templates/project/_dev/` 是研究项目内部兼容模板，不是开发仓治理目录。
 - 修改项目骨架时必须同步检查 `src/sa/project.py`、`tests/` 和 [docs/02-项目布局.md](../docs/02-项目布局.md)。
 - PPT 模板由 [presentation-design 技能](../.agents/skills/presentation-design/SKILL.md) 使用；规范和案例入口见 [docs/11-PPT设计方法与模式.md](../docs/11-PPT设计方法与模式.md)。
+- 正式报告先用 `sa report init` 建立工作区，再按 [docs/18-报告编排与输出.md](../docs/18-报告编排与输出.md) 填写 ReportPlan。
 

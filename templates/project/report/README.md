@@ -10,6 +10,7 @@
 | `index.html` | 自包含 HTML（生成物，可离线打开） |
 | `report.docx` | Word（生成物，可选） |
 | `deck.pptx` | PPT（生成物，可选） |
+| `rpt-NNNN/` | 正式独立报告：ReportPlan、来源映射、格式计划、产物和预览 |
 
 ## 规则
 
@@ -23,6 +24,10 @@
 ```bash
 python scripts/sa.py render html <project>
 python scripts/sa.py render docx <project>
+python scripts/sa.py report init <project> --id rpt-0001 --title "..."
+python scripts/sa.py report validate <project> --id rpt-0001
+python scripts/sa.py report build <project> --id rpt-0001 --format html
+python scripts/sa.py report register <project> --id rpt-0001 --format html
 ```
 
-通用 sa render pptx 尚未实现；当前 PPT 布局适配器为仓级呈现实验。新循环用 cycle capture 冻结内容、布局、成品、预览，再登记 presentation 与实际视觉审查；工作文件可重建的前提是相关输入已保留。
+正式报告见 [docs/18](../../../docs/18-报告编排与输出.md)。根目录 `document.json` 等文件保留给旧 `synthesis build`/`render` 快捷路径；PPT 正式构建走 `sa report build --format pptx` 与 `sa deck preview`。

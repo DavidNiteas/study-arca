@@ -1,8 +1,8 @@
 """Append-only output registry for independent DOCX, HTML and PPT pipelines.
 
-The research cycle records process and Research Snapshots. This registry records
-output-specific requests, plans, layouts, rendered artifacts, previews and
-review events without changing the sa.research/1 schema.
+Research workspaces resolve frozen cycle artifacts; synthesis workspaces resolve
+artifacts declared by independent report manifests. Both share output requests,
+plans, rendered artifacts, previews and review events.
 """
 
 from __future__ import annotations
@@ -36,6 +36,11 @@ def _now() -> str:
 
 
 def _artifact_index(project: Path) -> dict[str, dict]:
+    meta = load_json(project / "project.json", {}) or {}
+    if meta.get("workspace_type") == "synthesis":
+        from .reporting import report_artifact_index
+
+        return report_artifact_index(project)
     cycle = load_cycle(project)
     return {
         record["id"]: record
@@ -73,25 +78,40 @@ def _validate_output(project: Path, record: dict, artifacts: dict[str, dict], se
     output_format = record.get("format")
     if output_format not in FORMATS:
         return [f"{output_id}.format 必须是 {sorted(FORMATS)}"]
-    for field in ("agreement", "round", "snapshot", "request", "plan", "artifact", "renderer"):
+    meta = load_json(project / "project.json", {}) or {}
+    workspace_type = meta.get("workspace_type", "research")
+    required_fields = (
+        ("report", "request", "plan", "artifact", "renderer")
+        if workspace_type == "synthesis"
+        else ("agreement", "round", "snapshot", "request", "plan", "artifact", "renderer")
+    )
+    for field in required_fields:
         if not isinstance(record.get(field), str) or not record[field].strip():
             errors.append(f"{output_id}.{field} 必须是非空字符串或引用")
     if errors:
         return errors
 
-    cycle = load_cycle(project)
-    index = {item["id"]: item for item in cycle["records"]}
-    agreement = index.get(record["agreement"])
-    round_record = index.get(record["round"])
-    if not agreement or agreement.get("type") != "agreement" or agreement.get("status") != "approved":
-        errors.append(f"{output_id}.agreement 不是已批准约定")
-    if not round_record or round_record.get("type") != "round":
-        errors.append(f"{output_id}.round 不是研究轮次")
-    elif round_record.get("agreement") != record["agreement"]:
-        errors.append(f"{output_id} 的 agreement 与 round 不一致")
+    if workspace_type != "synthesis":
+        cycle = load_cycle(project)
+        index = {item["id"]: item for item in cycle["records"]}
+        agreement = index.get(record["agreement"])
+        round_record = index.get(record["round"])
+        if not agreement or agreement.get("type") != "agreement" or agreement.get("status") != "approved":
+            errors.append(f"{output_id}.agreement 不是已批准约定")
+        if not round_record or round_record.get("type") != "round":
+            errors.append(f"{output_id}.round 不是研究轮次")
+        elif round_record.get("agreement") != record["agreement"]:
+            errors.append(f"{output_id} 的 agreement 与 round 不一致")
 
-    for field in ("snapshot", "request", "plan", "layout", "artifact", "preview"):
+    reference_fields = {"request", "plan", "artifact", "preview"}
+    if workspace_type == "synthesis":
+        reference_fields.update({"report", "layout"})
+    else:
+        reference_fields.update({"snapshot", "layout"})
+    for field in reference_fields:
         value = record.get(field)
+        if field == "report":
+            continue
         if value is not None and value not in artifacts:
             errors.append(f"{output_id}.{field} 不是已冻结 artifact：{value}")
     if output_format == "pptx" and not record.get("layout"):
@@ -100,31 +120,57 @@ def _validate_output(project: Path, record: dict, artifacts: dict[str, dict], se
         return errors
 
     try:
-        snapshot = _json_artifact(project, artifacts, record["snapshot"], "snapshot")
-        if snapshot.get("schema") != "sa.research-ir/1":
-            errors.append(f"{output_id}.snapshot schema 不是 sa.research-ir/1")
-        else:
-            errors.extend(
-                f"{output_id}.snapshot: {error}"
-                for error in validate_research_ir(project, snapshot, verify_sources=False)
-            )
-
-        request = _json_artifact(project, artifacts, record["request"], "request")
-        if request.get("schema") != "sa.output-request/1":
-            errors.append(f"{output_id}.request schema 不是 sa.output-request/1")
-        if request.get("format") != output_format:
-            errors.append(f"{output_id}.request format 与输出不一致")
-        if request.get("snapshot") != record["snapshot"]:
-            errors.append(f"{output_id}.request snapshot 与输出不一致")
-
         plan = _json_artifact(project, artifacts, record["plan"], "plan")
         expected_schema = PLAN_SCHEMAS[output_format]
         if plan.get("schema") != expected_schema:
             errors.append(f"{output_id}.plan schema 必须是 {expected_schema}")
         if plan.get("format") != output_format:
             errors.append(f"{output_id}.plan format 与输出不一致")
-        if plan.get("snapshot") != record["snapshot"]:
-            errors.append(f"{output_id}.plan snapshot 与输出不一致")
+        if workspace_type == "synthesis":
+            if (
+                not isinstance(record.get("report"), str)
+                or not re.fullmatch(r"rpt-\d{4}", record["report"])
+            ):
+                errors.append(f"{output_id}.report 非法")
+            report = _json_artifact(project, artifacts, record["request"], "report plan")
+            if report.get("schema") != "sa.report-plan/1":
+                errors.append(f"{output_id}.request schema 不是 sa.report-plan/1")
+            if report.get("id") != record["report"]:
+                errors.append(f"{output_id}.request report 与输出不一致")
+            if output_format not in report.get("formats", []):
+                errors.append(f"{output_id}.request 未声明格式 {output_format}")
+            if plan.get("report") != record["report"]:
+                errors.append(f"{output_id}.plan report 与输出不一致")
+            for field in ("plan", "artifact", "layout", "preview"):
+                if not record.get(field):
+                    continue
+                if artifacts[record[field]].get("report") != record["report"]:
+                    errors.append(f"{output_id}.{field} 不属于当前 report")
+            source_snapshots = record.get("source_snapshots", [])
+            if not isinstance(source_snapshots, list) or any(
+                not isinstance(item, str) or not item.strip()
+                for item in source_snapshots
+            ):
+                errors.append(f"{output_id}.source_snapshots 必须是文本数组")
+        else:
+            snapshot = _json_artifact(project, artifacts, record["snapshot"], "snapshot")
+            if snapshot.get("schema") != "sa.research-ir/1":
+                errors.append(f"{output_id}.snapshot schema 不是 sa.research-ir/1")
+            else:
+                errors.extend(
+                    f"{output_id}.snapshot: {error}"
+                    for error in validate_research_ir(project, snapshot, verify_sources=False)
+                )
+
+            request = _json_artifact(project, artifacts, record["request"], "request")
+            if request.get("schema") != "sa.output-request/1":
+                errors.append(f"{output_id}.request schema 不是 sa.output-request/1")
+            if request.get("format") != output_format:
+                errors.append(f"{output_id}.request format 与输出不一致")
+            if request.get("snapshot") != record["snapshot"]:
+                errors.append(f"{output_id}.request snapshot 与输出不一致")
+            if plan.get("snapshot") != record["snapshot"]:
+                errors.append(f"{output_id}.plan snapshot 与输出不一致")
 
         if record.get("layout"):
             layout = _json_artifact(project, artifacts, record["layout"], "layout")
@@ -290,7 +336,8 @@ def output_status(project: Path | str) -> dict:
         outputs.append({
             "id": record["id"],
             "format": record["format"],
-            "snapshot": record["snapshot"],
+            "snapshot": record.get("snapshot"),
+            "report": record.get("report"),
             "artifact": record["artifact"],
             "preview": review.get("preview") if review and review.get("preview") else record.get("preview"),
             "review": review.get("status") if review else "pending",

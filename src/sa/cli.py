@@ -546,6 +546,71 @@ def cmd_research_ir(args) -> int:
     return 0
 
 
+def cmd_report(args) -> int:
+    from .reporting import (
+        build_report_document,
+        build_report_output,
+        init_report,
+        register_report_output,
+        report_status,
+        validate_report,
+    )
+
+    project = Path(args.project).resolve()
+    if args.action == "init":
+        if not args.id or not args.title:
+            raise ProjectError("report init 需要 --id 和 --title")
+        path = init_report(project, args.id, args.title, formats=args.format)
+        print(f"已初始化报告：{path}")
+        return 0
+    if args.action == "status":
+        status = report_status(project)
+        if args.json:
+            print(json.dumps(status, ensure_ascii=False, indent=2))
+        elif not status["reports"]:
+            print("当前工作区没有正式报告")
+        else:
+            for report in status["reports"]:
+                print(
+                    f"{report['id']}  {report['status']:<8}  "
+                    f"{report.get('title') or ''}  "
+                    f"formats={','.join(report.get('formats', []))}"
+                )
+                for error in report.get("errors", []):
+                    print(f"  [ERROR] {error}")
+        return 0
+    if not args.id:
+        raise ProjectError(f"report {args.action} 需要 --id")
+    if args.action == "validate":
+        errors = validate_report(project, args.id)
+        for error in errors:
+            print(f"[ERROR] {error}")
+        print(f"report {args.id}：{len(errors)} error")
+        return 1 if errors else 0
+    if args.action == "document":
+        print(build_report_document(project, args.id))
+        return 0
+    if not args.format:
+        raise ProjectError(f"report {args.action} 需要至少一个 --format")
+    if args.action == "build":
+        for output_format in args.format:
+            outputs = build_report_output(project, args.id, output_format)
+            for kind, path in outputs.items():
+                print(f"{output_format}.{kind}: {path}")
+        return 0
+    if args.action == "register":
+        for output_format in args.format:
+            output_id = register_report_output(
+                project,
+                args.id,
+                output_format,
+                preview=args.preview,
+            )
+            print(f"已登记输出：{output_id}")
+        return 0
+    raise ProjectError(f"未知 report 操作：{args.action}")
+
+
 def cmd_output(args) -> int:
     from .output_registry import (
         apply_records,
@@ -1257,6 +1322,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="同时校验当前来源和内容文件哈希",
     )
     research_ir.set_defaults(func=cmd_research_ir)
+
+    report = sub.add_parser("report", help="独立报告编排：内容映射、叙事、DOCX/HTML/PPT")
+    report.add_argument(
+        "action",
+        choices=["init", "validate", "document", "build", "register", "status"],
+    )
+    report.add_argument("project")
+    report.add_argument("--id")
+    report.add_argument("--title")
+    report.add_argument("--format", action="append", choices=sorted(["docx", "html", "pptx"]))
+    report.add_argument("--preview")
+    report.add_argument("--json", action="store_true")
+    report.set_defaults(func=cmd_report)
 
     output = sub.add_parser("output", help="独立输出登记：DOCX、HTML 和 PPT")
     output.add_argument("action", choices=["init", "apply", "status", "lint"])

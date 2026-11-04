@@ -1,0 +1,21 @@
+{
+  "schema": "sa.report-plan/1",
+  "id": "rpt-0001",
+  "project": "{{PROJECT_ID}}",
+  "title": "{{TITLE}}",
+  "as_of": "{{DATE}}",
+  "version": "v0.1",
+  "formats": ["docx", "html", "pptx"],
+  "brief": {},
+  "sources": [],
+  "content_map": [],
+  "narrative": {
+    "core_question": "",
+    "central_message": "",
+    "angles": [],
+    "sections": []
+  },
+  "footnotes": {},
+  "assumptions": [],
+  "open_issues": []
+}
