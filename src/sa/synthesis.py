@@ -1,4 +1,4 @@
-"""Synthesis work models, review/alignment ledgers and frozen snapshots."""
+"""Synthesis review/design ledgers, baselines and frozen snapshots."""
 from __future__ import annotations
 
 import hashlib
@@ -18,15 +18,81 @@ SNAPSHOT_SCHEMA = "sa.work-snapshot/1"
 ITEM_STATUS = {"planned", "active", "blocked", "done", "unknown"}
 CONTENT_LAYERS = {"user_statement", "material", "inference", "unknown"}
 RECORD_TYPES = {
-    "round", "review", "question", "answer", "correction", "alignment", "snapshot", "decision"
+    "round",
+    "review",
+    "question",
+    "answer",
+    "correction",
+    "design_proposal",
+    "design_decision",
+    "design_artifact",
+    "advisory_panel",
+    "specialist_task",
+    "alignment",
+    "snapshot",
+    "decision",
 }
 QUESTION_PRIORITIES = {"high", "medium", "low"}
 ANSWER_STATUSES = {"answered", "unknown", "skipped", "deferred"}
-ALIGNMENT_STATUSES = {"confirmed", "disputed", "unknown", "deferred", "out_of_scope"}
+ALIGNMENT_STATUSES = {
+    "confirmed",
+    "disputed",
+    "unknown",
+    "deferred",
+    "out_of_scope",
+    "accepted",
+    "rejected",
+    "superseded",
+}
 ROUND_DECISIONS = {"exit", "continue", "drill_down", "park"}
+ROUND_PROCESSES = {"review", "design", "mixed"}
+BASELINE_KINDS = {"knowledge", "design", "mixed"}
+DESIGN_DECISIONS = {"accepted", "rejected", "deferred"}
+DESIGN_ARTIFACT_KINDS = {
+    "model",
+    "schema",
+    "interface",
+    "workflow",
+    "research-design",
+    "experiment",
+    "narrative",
+    "other",
+}
+ADVISORY_MODES = {"replicate", "heterogeneous"}
+ADVISORY_STATUSES = {"completed", "partial", "failed"}
+SPECIALIST_STATUSES = {"completed", "partial", "failed", "blocked"}
+ROLE_IDS = {
+    "principal",
+    "research_assistant",
+    "assistant_researcher",
+    "research_advisor",
+    "research_specialist",
+}
+CONTENT_NATURES = {
+    "observation",
+    "interpretation",
+    "goal",
+    "constraint",
+    "assumption",
+    "proposal",
+    "option",
+    "decision",
+    "plan",
+    "unknown",
+}
+LIFECYCLE_STATUSES = {"proposed", "accepted", "rejected", "deferred", "superseded"}
+PROPOSER_ROLES = {"principal", "assistant_researcher", "research_advisor", "research_specialist"}
+REQUESTER_ROLES = {"principal", "research_assistant", "assistant_researcher"}
+DESIGN_RECORD_TYPES = {
+    "design_proposal",
+    "design_decision",
+    "design_artifact",
+    "advisory_panel",
+    "specialist_task",
+}
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,79}$")
 LAYER_LABELS = {
-    "user_statement": "用户陈述",
+    "user_statement": "首席研究员陈述",
     "material": "材料记录",
     "inference": "代理归纳",
     "unknown": "未知",
@@ -47,6 +113,24 @@ def _digest_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256_text() -> re.Pattern[str]:
+    return re.compile(r"^[0-9a-f]{64}$")
+
+
+def _project_file(project: Path, value: str) -> tuple[Path | None, str | None]:
+    if not isinstance(value, str) or not value.strip():
+        return None, "路径必须是非空文本"
+    relative = Path(value)
+    if relative.is_absolute():
+        return None, "路径必须是工作区相对路径"
+    path = (project / relative).resolve()
+    if not path.is_relative_to(project):
+        return None, "路径越出工作区"
+    if not path.is_file():
+        return None, "文件不存在"
+    return path, None
 
 
 def _model_digest(model: dict) -> str:
@@ -97,16 +181,17 @@ def init_synthesis(project: Path | str) -> Path:
         "# 总结记录\n\n"
         "当前机器真相为 `ledger.json`。总结型工作区独立使用 `sa.synthesis/1`，"
         "不从研究循环推断状态。\n\n"
-        "复盘-对齐事件通过 `sa synthesis apply --file <records.json>` 追加；"
-        "关闭轮次后使用 `sa synthesis snapshot` 冻结工作模型，"
+        "复盘、设计和循环事件通过 `sa synthesis apply --file <records.json>` 追加；"
+        "关闭轮次后使用 `sa synthesis snapshot` 冻结 knowledge/design baseline，"
         "正式呈现使用 `sa synthesis build --snapshot <id>`。\n",
         encoding="utf-8",
     )
     (project / "work-model/README.md").write_text(
         "# 工作模型\n\n"
-        "保存从用户材料归一化得到的工作主题、进展、结果、阻塞、依赖和未知项。"
+        "保存从首席研究员材料归一化得到的工作主题、进展、结果、阻塞、依赖和未知项。"
         "代理归纳必须能回指 `brief/provided/` 中的材料。\n\n"
-        "这里是一轮轮复盘迭代后的当前工作态；正式输出应绑定 "
+        "这里是一轮轮复盘迭代后的当前知识态；设计提案、决定和研究过程记录保存在 "
+        "`synthesis/ledger.json`。正式输出应绑定 "
         "`synthesis/snapshots/<id>/snapshot.json`，而不是直接读取本文件。\n",
         encoding="utf-8",
     )
@@ -190,6 +275,15 @@ def _validate_work_model(project: Path, model: dict, meta: dict) -> list[str]:
                     errors.append(f"{entry_mark}.text 必须是非空文本")
                 if value.get("layer") not in CONTENT_LAYERS:
                     errors.append(f"{entry_mark}.layer 非法")
+                if value.get("nature") is not None and value.get("nature") not in CONTENT_NATURES:
+                    errors.append(f"{entry_mark}.nature 非法")
+                if value.get("actor_role") is not None and value.get("actor_role") not in ROLE_IDS:
+                    errors.append(f"{entry_mark}.actor_role 非法")
+                if (
+                    value.get("lifecycle") is not None
+                    and value.get("lifecycle") not in LIFECYCLE_STATUSES
+                ):
+                    errors.append(f"{entry_mark}.lifecycle 非法")
                 materials = value.get("materials", [])
                 if not isinstance(materials, list) or any(
                     not isinstance(material, str) or not material.strip()
@@ -224,6 +318,11 @@ def _validate_records(
     snapshot_rounds: dict[str, str] = {}
     round_topics: dict[str, str] = {}
     topics: set[str] = set()
+    design_proposals: dict[str, dict] = {}
+    design_decisions: dict[str, dict] = {}
+    design_artifacts: dict[str, dict] = {}
+    advisory_panels: dict[str, dict] = {}
+    specialist_tasks: dict[str, dict] = {}
 
     def text(record: dict, field: str, mark: str) -> bool:
         if not isinstance(record.get(field), str) or not record[field].strip():
@@ -242,6 +341,22 @@ def _validate_records(
             return None
         if required and not value:
             errors.append(f"{mark}.{field} 不可为空")
+            return None
+        return value
+
+    def role(
+        record: dict,
+        field: str,
+        mark: str,
+        allowed: set[str],
+        *,
+        required: bool = True,
+    ) -> str | None:
+        value = record.get(field)
+        if value is None and not required:
+            return None
+        if value not in allowed:
+            errors.append(f"{mark}.{field} 必须是 {', '.join(sorted(allowed))} 之一")
             return None
         return value
 
@@ -276,6 +391,8 @@ def _validate_records(
 
         if kind == "round":
             text(record, "goal", mark)
+            if record.get("process") is not None and record.get("process") not in ROUND_PROCESSES:
+                errors.append(mark + ".process 必须是 review、design 或 mixed")
             topic_fields = {"topic", "topic_title", "related_work_items"}
             if topic_fields.intersection(record):
                 if not isinstance(record.get("topic"), str) or not ID_RE.fullmatch(record["topic"]):
@@ -317,7 +434,7 @@ def _validate_records(
                         None,
                     )
                     if not parent_decision:
-                        errors.append(mark + " 父轮次缺少用户循环出口决定")
+                        errors.append(mark + " 父轮次缺少首席研究员循环出口决定")
                     elif parent_decision.get("decision") == "drill_down":
                         if parent_decision.get("target_topic") != record.get("topic"):
                             errors.append(mark + " 父轮次 drill_down 目标与当前 topic 不一致")
@@ -396,13 +513,239 @@ def _validate_records(
                 r"[0-9a-f]{64}", record["model_sha256"]
             ):
                 errors.append(mark + ".model_sha256 必须是模型摘要")
+        elif kind == "design_proposal":
+            target = round_ref()
+            if target and target["id"] in closed:
+                errors.append(mark + " 不能写入已关闭轮次")
+            role(record, "proposed_by", mark, PROPOSER_ROLES)
+            for field in ("title", "problem", "recommendation"):
+                text(record, field, mark)
+            values(record, "constraints", mark, required=True)
+            values(record, "risks", mark)
+            values(record, "tbd", mark)
+            related = values(record, "related_work_items", mark)
+            if related is not None:
+                for work_item in related:
+                    if work_item not in work_items:
+                        errors.append(
+                            f"{mark}.related_work_items 引用了不存在的工作主题：{work_item}"
+                        )
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            options = record.get("options")
+            option_ids: set[str] = set()
+            if not isinstance(options, list) or not options:
+                errors.append(mark + ".options 必须是非空数组")
+            else:
+                for option_index, option in enumerate(options):
+                    option_mark = f"{mark}.options[{option_index}]"
+                    if not isinstance(option, dict):
+                        errors.append(option_mark + " 必须是对象")
+                        continue
+                    option_id = option.get("id")
+                    if (
+                        not isinstance(option_id, str)
+                        or not ID_RE.fullmatch(option_id)
+                        or option_id in option_ids
+                    ):
+                        errors.append(option_mark + ".id 非法或重复")
+                    else:
+                        option_ids.add(option_id)
+                    if not isinstance(option.get("summary"), str) or not option["summary"].strip():
+                        errors.append(option_mark + ".summary 必须是非空文本")
+                    for field in ("tradeoffs", "risks"):
+                        value = option.get(field, [])
+                        if not isinstance(value, list) or any(
+                            not isinstance(entry, str) or not entry.strip() for entry in value
+                        ):
+                            errors.append(option_mark + f".{field} 必须是文本数组")
+            panel_id = record.get("panel")
+            if panel_id is not None and panel_id not in advisory_panels:
+                errors.append(mark + ".panel 必须引用前序 advisory_panel")
+            design_proposals[record_id] = record
+        elif kind == "design_decision":
+            target = round_ref()
+            if target and target["id"] in closed:
+                errors.append(mark + " 不能写入已关闭轮次")
+            proposal_id = record.get("proposal")
+            proposal = design_proposals.get(proposal_id)
+            if not proposal:
+                errors.append(mark + ".proposal 必须引用前序 design_proposal")
+            elif proposal_id in design_decisions:
+                errors.append(mark + ".proposal 已经有设计决定；后续设计请建立新提案")
+            if record.get("outcome") not in DESIGN_DECISIONS:
+                errors.append(mark + ".outcome 必须是 accepted、rejected 或 deferred")
+            if record.get("decided_by") != "principal":
+                errors.append(mark + ".decided_by 必须是 principal")
+            text(record, "rationale", mark)
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            supersedes = values(record, "supersedes", mark) or []
+            if supersedes and record.get("outcome") != "accepted":
+                errors.append(mark + " 只有 accepted 设计可以声明 supersedes")
+            for old_id in supersedes:
+                if old_id == proposal_id:
+                    errors.append(mark + ".supersedes 不能引用当前 proposal")
+                elif old_id not in design_proposals:
+                    errors.append(mark + ".supersedes 必须引用前序 design_proposal")
+            values(record, "conditions", mark)
+            if isinstance(proposal_id, str) and proposal_id not in design_decisions:
+                design_decisions[proposal_id] = record
+        elif kind == "design_artifact":
+            target = round_ref()
+            if target and target["id"] in closed:
+                errors.append(mark + " 不能写入已关闭轮次")
+            proposal_id = record.get("proposal")
+            if proposal_id not in design_proposals:
+                errors.append(mark + ".proposal 必须引用前序 design_proposal")
+            role(record, "created_by", mark, PROPOSER_ROLES)
+            text(record, "title", mark)
+            text(record, "summary", mark)
+            if record.get("kind") not in DESIGN_ARTIFACT_KINDS:
+                errors.append(
+                    mark + ".kind 必须是 " + "、".join(sorted(DESIGN_ARTIFACT_KINDS))
+                )
+            path_value = record.get("path")
+            sha_value = record.get("sha256")
+            if (path_value is None) != (sha_value is None):
+                errors.append(mark + ".path 与 .sha256 必须同时出现")
+            if path_value is not None and sha_value is not None:
+                path, path_error = _project_file(project, path_value)
+                if path_error:
+                    errors.append(mark + ".path " + path_error)
+                elif not isinstance(sha_value, str) or not _sha256_text().fullmatch(sha_value):
+                    errors.append(mark + ".sha256 非法")
+                elif _digest_file(path) != sha_value:
+                    errors.append(mark + ".sha256 与文件不一致")
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            design_artifacts[record_id] = record
+        elif kind == "advisory_panel":
+            target = round_ref()
+            if target and target["id"] in closed:
+                errors.append(mark + " 不能写入已关闭轮次")
+            role(record, "convened_by", mark, {"principal", "assistant_researcher"})
+            for field in ("question", "mandate", "synthesis"):
+                text(record, field, mark)
+            if record.get("mode") not in ADVISORY_MODES:
+                errors.append(mark + ".mode 必须是 replicate 或 heterogeneous")
+            if record.get("status") not in ADVISORY_STATUSES:
+                errors.append(mark + ".status 必须是 completed、partial 或 failed")
+            members = record.get("members")
+            member_ids: set[str] = set()
+            if not isinstance(members, list) or len(members) < 2:
+                errors.append(mark + ".members 至少需要两个独立研究顾问")
+            else:
+                for member_index, member in enumerate(members):
+                    member_mark = f"{mark}.members[{member_index}]"
+                    if not isinstance(member, dict):
+                        errors.append(member_mark + " 必须是对象")
+                        continue
+                    advisor_id = member.get("advisor_id")
+                    if (
+                        not isinstance(advisor_id, str)
+                        or not ID_RE.fullmatch(advisor_id)
+                        or advisor_id in member_ids
+                    ):
+                        errors.append(member_mark + ".advisor_id 非法或重复")
+                    else:
+                        member_ids.add(advisor_id)
+                    if member.get("role") != "research_advisor":
+                        errors.append(member_mark + ".role 必须是 research_advisor")
+                    for field in ("mandate", "summary"):
+                        if not isinstance(member.get(field), str) or not member[field].strip():
+                            errors.append(member_mark + f".{field} 必须是非空文本")
+                    uncertainties = member.get("uncertainties", [])
+                    if not isinstance(uncertainties, list) or any(
+                        not isinstance(entry, str) or not entry.strip()
+                        for entry in uncertainties
+                    ):
+                        errors.append(member_mark + ".uncertainties 必须是文本数组")
+            values(record, "unresolved_disagreements", mark)
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            advisory_panels[record_id] = record
+        elif kind == "specialist_task":
+            target = round_ref()
+            if target and target["id"] in closed:
+                errors.append(mark + " 不能写入已关闭轮次")
+            text(record, "task", mark)
+            text(record, "summary", mark)
+            role(record, "requested_by", mark, REQUESTER_ROLES)
+            if record.get("executed_by") != "research_specialist":
+                errors.append(mark + ".executed_by 必须是 research_specialist")
+            if record.get("status") not in SPECIALIST_STATUSES:
+                errors.append(
+                    mark + ".status 必须是 completed、partial、failed 或 blocked"
+                )
+            values(record, "scope", mark, required=True)
+            values(record, "limitations", mark)
+            values(record, "unresolved", mark)
+            materials = values(record, "materials", mark, required=True)
+            if materials is not None:
+                for material in materials:
+                    if material not in known_materials:
+                        errors.append(f"{mark}.materials 引用了不存在的材料：{material}")
+            outputs = record.get("outputs", [])
+            if not isinstance(outputs, list):
+                errors.append(mark + ".outputs 必须是数组")
+            else:
+                for output_index, output in enumerate(outputs):
+                    output_mark = f"{mark}.outputs[{output_index}]"
+                    if not isinstance(output, dict):
+                        errors.append(output_mark + " 必须是对象")
+                        continue
+                    if output.get("path") is None and output.get("sha256") is None:
+                        text(output, "summary", output_mark)
+                        continue
+                    path, path_error = _project_file(project, output.get("path"))
+                    if path_error:
+                        errors.append(output_mark + ".path " + path_error)
+                    elif not isinstance(output.get("sha256"), str) or not _sha256_text().fullmatch(output["sha256"]):
+                        errors.append(output_mark + ".sha256 非法")
+                    elif _digest_file(path) != output["sha256"]:
+                        errors.append(output_mark + ".sha256 与文件不一致")
+            specialist_tasks[record_id] = record
         elif kind == "alignment":
             target = round_ref()
             if target:
                 if target["id"] in closed or target["id"] in aligned:
                     errors.append(mark + " 轮次已经关闭")
-                if not reviews.get(target["id"]):
-                    errors.append(mark + " 对齐前至少需要一条复盘记录")
+                current_records = [
+                    item
+                    for item in records[:index]
+                    if item.get("round") == target["id"]
+                ]
+                has_review = any(item.get("type") == "review" for item in current_records)
+                has_design = any(
+                    item.get("type") in {"design_proposal", "design_artifact", "advisory_panel", "specialist_task"}
+                    for item in current_records
+                )
+                process = target.get("process")
+                if not has_review and not has_design:
+                    errors.append(mark + " 对齐前至少需要一条复盘或设计记录")
+                if process == "review" and has_design:
+                    errors.append(mark + " review 轮次不能包含设计记录；混合工作应声明 mixed")
+                if process == "design" and has_review:
+                    errors.append(mark + " design 轮次不能包含复盘记录；混合工作应声明 mixed")
+                if process in {"design", "mixed"} and not has_design:
+                    errors.append(mark + f" {process} 轮次至少需要一条设计记录")
+                if process == "mixed" and not has_review:
+                    errors.append(mark + " mixed 轮次至少需要一条复盘记录")
+                if process is None and not has_review:
+                    errors.append(mark + " 旧格式轮次对齐前至少需要一条复盘记录")
                 round_questions = [
                     question_id for question_id, value in questions.items()
                     if value.get("round") == target["id"]
@@ -487,6 +830,9 @@ def _validate_records(
             text(record, "label", mark)
             text(record, "path", mark)
             text(record, "sha256", mark)
+            baseline_kind = record.get("baseline_kind")
+            if baseline_kind is not None and baseline_kind not in BASELINE_KINDS:
+                errors.append(mark + ".baseline_kind 必须是 knowledge、design 或 mixed")
             expected = Path("synthesis/snapshots") / record_id / "snapshot.json"
             if record.get("path") != expected.as_posix():
                 errors.append(f"{mark}.path 必须是 {expected.as_posix()}")
@@ -511,6 +857,8 @@ def _validate_records(
                                 errors.append(f"{mark} 快照 project 不一致")
                             if snapshot.get("round") != record.get("round"):
                                 errors.append(f"{mark} 快照 round 不一致")
+                            if baseline_kind is not None and snapshot.get("baseline_kind") != baseline_kind:
+                                errors.append(f"{mark} 快照 baseline_kind 不一致")
                             snapshot_model = snapshot.get("model")
                             if not isinstance(snapshot_model, dict):
                                 errors.append(f"{mark} 快照缺少 model")
@@ -518,6 +866,11 @@ def _validate_records(
                                 errors.append(f"{mark} 快照 model_sha256 不一致")
                             elif snapshot.get("model_sha256") != alignment_hashes.get(record.get("round")):
                                 errors.append(f"{mark} 快照未绑定本轮对齐时的模型版本")
+                            if baseline_kind in {"design", "mixed"}:
+                                if not isinstance(snapshot.get("design_baseline"), dict):
+                                    errors.append(f"{mark} 快照缺少 design_baseline")
+                                elif snapshot["design_baseline"].get("schema") != "sa.design-baseline/1":
+                                    errors.append(f"{mark}.design_baseline schema 非法")
             if target:
                 snapshot_rounds[record_id] = target["id"]
         elif kind == "decision":
@@ -530,8 +883,8 @@ def _validate_records(
                 errors.append(mark + " 作决定前必须冻结轮次快照")
             if record.get("round") in decision_rounds:
                 errors.append(mark + " 每个轮次只能登记一次循环决定")
-            if record.get("actor") != "user":
-                errors.append(mark + ".actor 必须是 user")
+            if record.get("actor") not in {"principal", "user"}:
+                errors.append(mark + ".actor 必须是 principal（旧记录兼容 user）")
             if record.get("decision") not in ROUND_DECISIONS:
                 errors.append(mark + ".decision 非法")
             text(record, "rationale", mark)
@@ -678,17 +1031,77 @@ def apply_records(project: Path | str, records) -> int:
     return len(records)
 
 
+def _build_design_baseline(records: list[dict]) -> dict:
+    proposals = [record for record in records if record.get("type") == "design_proposal"]
+    decisions = {
+        record["proposal"]: record
+        for record in records
+        if record.get("type") == "design_decision"
+    }
+    artifacts_by_proposal: dict[str, list[dict]] = {}
+    for record in records:
+        if record.get("type") == "design_artifact":
+            artifacts_by_proposal.setdefault(record["proposal"], []).append(record)
+    superseded = {
+        old_id
+        for decision in decisions.values()
+        if decision.get("outcome") == "accepted"
+        for old_id in decision.get("supersedes", [])
+    }
+    proposal_states = []
+    for proposal in proposals:
+        proposal_id = proposal["id"]
+        decision = decisions.get(proposal_id)
+        effective_status = (
+            "superseded"
+            if proposal_id in superseded
+            else decision.get("outcome", "proposed")
+            if decision
+            else "proposed"
+        )
+        proposal_states.append({
+            **json.loads(json.dumps(proposal, ensure_ascii=False)),
+            "effective_status": effective_status,
+            "decision": (
+                json.loads(json.dumps(decision, ensure_ascii=False))
+                if decision
+                else None
+            ),
+            "artifacts": [
+                json.loads(json.dumps(artifact, ensure_ascii=False))
+                for artifact in artifacts_by_proposal.get(proposal_id, [])
+            ],
+        })
+    return {
+        "schema": "sa.design-baseline/1",
+        "proposals": proposal_states,
+        "advisory_panels": [
+            json.loads(json.dumps(record, ensure_ascii=False))
+            for record in records
+            if record.get("type") == "advisory_panel"
+        ],
+        "specialist_tasks": [
+            json.loads(json.dumps(record, ensure_ascii=False))
+            for record in records
+            if record.get("type") == "specialist_task"
+        ],
+    }
+
+
 def create_snapshot(
     project: Path | str,
     snapshot_id: str,
     label: str,
     round_id: str,
+    baseline_kind: str | None = None,
 ) -> Path:
     project = Path(project).resolve()
     if not isinstance(snapshot_id, str) or not ID_RE.fullmatch(snapshot_id):
         raise ProjectError("snapshot id 格式非法")
     if not isinstance(label, str) or not label.strip():
         raise ProjectError("snapshot label 不能为空")
+    if baseline_kind is not None and baseline_kind not in BASELINE_KINDS:
+        raise ProjectError("snapshot baseline_kind 必须是 knowledge、design 或 mixed")
     with _writer(project):
         data = _load_ledger(project)
         if any(record.get("id") == snapshot_id for record in data["records"]):
@@ -719,6 +1132,30 @@ def create_snapshot(
         current_model_sha256 = _model_digest(model)
         if alignment.get("model_sha256") != current_model_sha256:
             raise ProjectError("工作模型在对齐后已变化；请新建轮次重新对齐后再冻结")
+        round_records = [
+            record for record in data["records"]
+            if record.get("round") == round_id
+        ]
+        has_review = any(record.get("type") == "review" for record in round_records)
+        has_design = any(record.get("type") in DESIGN_RECORD_TYPES for record in round_records)
+        if baseline_kind is None:
+            process = round_record.get("process")
+            if process == "design":
+                baseline_kind = "design"
+            elif process == "mixed":
+                baseline_kind = "mixed"
+            elif process == "review":
+                baseline_kind = "knowledge"
+            elif has_design and has_review:
+                baseline_kind = "mixed"
+            elif has_design:
+                baseline_kind = "design"
+            else:
+                baseline_kind = "knowledge"
+        if baseline_kind == "knowledge" and has_design:
+            raise ProjectError("knowledge baseline 不能冻结包含设计记录的轮次")
+        if baseline_kind in {"design", "mixed"} and not has_design:
+            raise ProjectError(f"{baseline_kind} baseline 需要至少一条设计记录")
         relative_path = Path("synthesis/snapshots") / snapshot_id / "snapshot.json"
         snapshot_file = project / relative_path
         if snapshot_file.parent.exists():
@@ -739,8 +1176,11 @@ def create_snapshot(
             "source_manifest_sha256": _digest_file(
                 project / "brief/provided/manifest.json"
             ),
+            "baseline_kind": baseline_kind,
             "model": model,
         }
+        if baseline_kind in {"design", "mixed"}:
+            snapshot["design_baseline"] = _build_design_baseline(data["records"])
         try:
             snapshot_file.write_text(
                 json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n",
@@ -755,6 +1195,7 @@ def create_snapshot(
                 "label": label.strip(),
                 "path": relative_path.as_posix(),
                 "sha256": _digest_file(snapshot_file),
+                "baseline_kind": baseline_kind,
             }
             records = data["records"] + [record]
             errors = _validate_records(
@@ -796,6 +1237,13 @@ def load_work_snapshot(project: Path | str, snapshot_id: str) -> dict:
     snapshot = json.loads(path.read_text(encoding="utf-8-sig"))
     if snapshot.get("schema") != SNAPSHOT_SCHEMA:
         raise ProjectError(f"snapshot schema 必须是 {SNAPSHOT_SCHEMA}")
+    baseline_kind = snapshot.get("baseline_kind")
+    if baseline_kind is not None and baseline_kind not in BASELINE_KINDS:
+        raise ProjectError("snapshot baseline_kind 必须是 knowledge、design 或 mixed")
+    if baseline_kind in {"design", "mixed"}:
+        design = snapshot.get("design_baseline")
+        if not isinstance(design, dict) or design.get("schema") != "sa.design-baseline/1":
+            raise ProjectError("snapshot design_baseline schema 非法")
     meta = load_json(project / "project.json", {}) or {}
     if snapshot.get("project") != meta.get("id"):
         raise ProjectError("snapshot project 与 project.json 不一致")
@@ -845,6 +1293,7 @@ def synthesis_status(project: Path | str) -> dict:
         ]
         rounds.append({
             "id": round_id,
+            "process": record.get("process"),
             "topic": record.get("topic"),
             "topic_title": record.get("topic_title") or record["goal"],
             "related_work_items": record.get("related_work_items", []),
@@ -858,6 +1307,22 @@ def synthesis_status(project: Path | str) -> dict:
                 if item.get("type") == "review" and item.get("round") == round_id
             ),
             "questions": questions,
+            "design_proposals": sum(
+                1 for item in records
+                if item.get("type") == "design_proposal" and item.get("round") == round_id
+            ),
+            "design_decisions": sum(
+                1 for item in records
+                if item.get("type") == "design_decision" and item.get("round") == round_id
+            ),
+            "advisory_panels": sum(
+                1 for item in records
+                if item.get("type") == "advisory_panel" and item.get("round") == round_id
+            ),
+            "specialist_tasks": sum(
+                1 for item in records
+                if item.get("type") == "specialist_task" and item.get("round") == round_id
+            ),
         })
     snapshots = [
         {
@@ -865,6 +1330,7 @@ def synthesis_status(project: Path | str) -> dict:
             "round": record["round"],
             "label": record["label"],
             "path": record["path"],
+            "baseline_kind": record.get("baseline_kind", "knowledge"),
         }
         for record in records
         if record.get("type") == "snapshot"
@@ -882,12 +1348,17 @@ def synthesis_status(project: Path | str) -> dict:
                 children.setdefault(parent_round, []).append(record["id"])
     for round_record in rounds:
         round_record["children"] = children.get(round_record["id"], [])
+    design_records = any(
+        record.get("type") in DESIGN_RECORD_TYPES
+        for record in records
+    )
     return {
         "schema": SCHEMA,
         "project": data["project"],
         "model_sha256": _model_digest(model),
         "rounds": rounds,
         "snapshots": snapshots,
+        "design_baseline": _build_design_baseline(records) if design_records else None,
         "records": len(records),
     }
 
@@ -953,6 +1424,28 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     corrections = [
         record for record in round_records if record.get("type") == "correction"
     ]
+    design_proposals = [
+        record for record in round_records if record.get("type") == "design_proposal"
+    ]
+    design_decisions = {
+        record["proposal"]: record
+        for record in records
+        if record.get("type") == "design_decision"
+    }
+    current_design_decisions = [
+        design_decisions[proposal["id"]]
+        for proposal in design_proposals
+        if proposal["id"] in design_decisions
+    ]
+    design_artifacts = [
+        record for record in round_records if record.get("type") == "design_artifact"
+    ]
+    advisory_panels = [
+        record for record in round_records if record.get("type") == "advisory_panel"
+    ]
+    specialist_tasks = [
+        record for record in round_records if record.get("type") == "specialist_task"
+    ]
     decision = next(
         (
             record for record in records
@@ -966,7 +1459,18 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     ]
     material_ids = sorted({
         material
-        for record in [round_record, *reviews, *questions, *answers.values(), *corrections]
+        for record in [
+            round_record,
+            *reviews,
+            *questions,
+            *answers.values(),
+            *corrections,
+            *design_proposals,
+            *design_artifacts,
+            *advisory_panels,
+            *specialist_tasks,
+            *current_design_decisions,
+        ]
         for material in record.get("materials", [])
     })
     topic_title = round_record.get("topic_title") or round_record.get("goal") or round_id
@@ -983,6 +1487,8 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
     ]
     if topic:
         lines.append(f"- 主题 ID：`{topic}`")
+    if round_record.get("process"):
+        lines.append(f"- 轮次过程：`{round_record['process']}`")
     lines.extend([
         f"- 相关工作主题：{'、'.join(f'`{value}`' for value in round_record.get('related_work_items', [])) or '无'}",
         f"- 对齐模型摘要：`{alignment.get('model_sha256', '')}`",
@@ -999,6 +1505,69 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
         lines.extend(f"- {review['summary']}" for review in reviews)
     else:
         lines.append("- 未记录复盘摘要")
+    lines.extend(["", "## 设计记录", ""])
+    if design_proposals:
+        lines.extend([
+            "| 提案 | 标题 | 提出者 | 有效状态 | 依据 |",
+            "|---|---|---|---|---|",
+        ])
+        superseded = {
+            old_id
+            for decision in design_decisions.values()
+            if decision.get("outcome") == "accepted"
+            for old_id in decision.get("supersedes", [])
+        }
+        for proposal in design_proposals:
+            design_decision = design_decisions.get(proposal["id"])
+            status = (
+                "superseded"
+                if proposal["id"] in superseded
+                else design_decision.get("outcome", "proposed")
+                if design_decision
+                else "proposed"
+            )
+            lines.append(
+                "| "
+                + " | ".join([
+                    _markdown_cell(proposal["id"]),
+                    _markdown_cell(proposal["title"]),
+                    _markdown_cell(proposal["proposed_by"]),
+                    _markdown_cell(status),
+                    _markdown_cell(
+                        design_decision.get("rationale", "")
+                        if design_decision
+                        else ""
+                    ),
+                ])
+                + " |"
+            )
+    else:
+        lines.append("- 本轮没有设计提案")
+    if design_artifacts:
+        lines.extend(["", "### 设计产物", ""])
+        for artifact in design_artifacts:
+            path = f"；文件 `{artifact['path']}`" if artifact.get("path") else ""
+            lines.append(
+                f"- `{artifact['id']}` {artifact['title']}（{artifact['kind']}）"
+                f"：{artifact['summary']}{path}"
+            )
+    if advisory_panels:
+        lines.extend(["", "### 研究顾问委员会", ""])
+        for panel in advisory_panels:
+            lines.append(
+                f"- `{panel['id']}` {panel['question']}（{panel['mode']}，"
+                f"{len(panel['members'])} 位研究顾问）：{panel['synthesis']}"
+            )
+            for member in panel["members"]:
+                lines.append(
+                    f"  - `{member['advisor_id']}`：{member['summary']}"
+                )
+    if specialist_tasks:
+        lines.extend(["", "### 研究专员任务", ""])
+        for task in specialist_tasks:
+            lines.append(
+                f"- `{task['id']}` {task['task']}（{task['status']}）：{task['summary']}"
+            )
     lines.extend(["", "## 问题与回答", ""])
     if questions:
         lines.extend(["| 问题 | 优先级 | 回答状态 | 回答摘要 |", "|---|---|---|---|"])
@@ -1037,6 +1606,9 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
             "unknown": "未知",
             "deferred": "暂缓",
             "out_of_scope": "不属于本轮",
+            "accepted": "已接受设计",
+            "rejected": "已否决设计",
+            "superseded": "已被替代",
         }
         for item in items:
             lines.append(
@@ -1063,7 +1635,7 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
             "drill_down": "展开下层主题",
             "park": "暂挂当前主题",
         }[decision["decision"]]
-        lines.append(f"- 用户决定：{decision_label}")
+        lines.append(f"- 首席研究员决定：{decision_label}")
         lines.append(f"- 理由：{decision['rationale']}")
         if decision.get("target_topic"):
             lines.append(
@@ -1072,13 +1644,14 @@ def render_alignment_record(project: Path | str, round_id: str) -> Path:
         if decision.get("resume_when"):
             lines.append(f"- 重启条件：{decision['resume_when']}")
     else:
-        lines.append("- 待用户决定")
+        lines.append("- 待首席研究员决定")
     lines.extend(["", "## 冻结快照", ""])
     if snapshots:
         for snapshot in snapshots:
             snapshot_link = Path(snapshot["path"]).relative_to("synthesis").as_posix()
             lines.append(
                 f"- `{snapshot['id']}`：{snapshot['label']}，"
+                f"{snapshot.get('baseline_kind', 'knowledge')} baseline，"
                 f"[读取快照](../{snapshot_link})"
             )
     else:
@@ -1130,7 +1703,11 @@ def _annotated_bullets(item: dict, field: str) -> str:
     return "\n".join(lines)
 
 
-def render_summary_markdown(project: Path | str, model: dict | None = None) -> Path:
+def render_summary_markdown(
+    project: Path | str,
+    model: dict | None = None,
+    design_baseline: dict | None = None,
+) -> Path:
     project = Path(project)
     errors = validate_synthesis(project)
     if errors:
@@ -1150,7 +1727,52 @@ def render_summary_markdown(project: Path | str, model: dict | None = None) -> P
     if model.get("audience"):
         lines.append(f"读者：{model['audience']}")
         lines.append("")
-    lines.extend(["## 概览", "", model.get("overview") or "用户未提供概览。", ""])
+    lines.extend(["## 概览", "", model.get("overview") or "首席研究员未提供概览。", ""])
+    if design_baseline:
+        proposals = design_baseline.get("proposals", [])
+        lines.extend([
+            "## 设计基线",
+            "",
+            "| 提案 | 标题 | 状态 | 决定依据 |",
+            "|---|---|---|---|",
+        ])
+        if proposals:
+            for proposal in proposals:
+                decision = proposal.get("decision") or {}
+                lines.append(
+                    f"| {proposal['id']} | {proposal['title']} | "
+                    f"{proposal.get('effective_status', 'proposed')} | "
+                    f"{decision.get('rationale', '')} |"
+                )
+        else:
+            lines.append("| 无 | 无 | proposed | 尚未形成设计提案 |")
+        lines.append("")
+        artifacts = [
+            artifact
+            for proposal in proposals
+            for artifact in proposal.get("artifacts", [])
+        ]
+        if artifacts:
+            lines.extend(["### 设计产物", ""])
+            for artifact in artifacts:
+                path = f"；文件：`{artifact['path']}`" if artifact.get("path") else ""
+                lines.append(
+                    f"- `{artifact['id']}` {artifact['title']}：{artifact['summary']}{path}"
+                )
+            lines.append("")
+        if design_baseline.get("advisory_panels"):
+            lines.extend(["### 研究顾问委员会", ""])
+            for panel in design_baseline["advisory_panels"]:
+                lines.append(
+                    f"- {panel['question']}：{panel['synthesis']} "
+                    f"（{len(panel['members'])} 位研究顾问）"
+                )
+            lines.append("")
+        if design_baseline.get("specialist_tasks"):
+            lines.extend(["### 研究专员任务", ""])
+            for task in design_baseline["specialist_tasks"]:
+                lines.append(f"- {task['task']}：{task['summary']}（{task['status']}）")
+            lines.append("")
     items = model.get("items", [])
     if items:
         lines.extend([
@@ -1187,7 +1809,7 @@ def render_summary_markdown(project: Path | str, model: dict | None = None) -> P
                 "",
             ])
     else:
-        lines.extend(["## 工作主题", "", "用户尚未提供可归纳的工作主题。", ""])
+        lines.extend(["## 工作主题", "", "首席研究员尚未提供可归纳的工作主题。", ""])
     lines.extend(["## 未知与待确认", "", _bullets(model.get("unknowns", [])), ""])
     output = project / "report/work-summary.md"
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1199,6 +1821,7 @@ def build_synthesis_document(
     project: Path | str,
     model: dict | None = None,
     snapshot_id: str | None = None,
+    design_baseline: dict | None = None,
 ) -> dict:
     project = Path(project)
     errors = validate_synthesis(project)
@@ -1216,12 +1839,71 @@ def build_synthesis_document(
             "blocks": blocks,
         })
 
-    overview = model.get("overview") or "用户未提供概览。"
+    overview = model.get("overview") or "首席研究员未提供概览。"
     section("overview", "概览", [{
         "type": "paragraph",
         "layer": "inference",
         "text": overview,
     }])
+
+    if design_baseline:
+        proposals = design_baseline.get("proposals", [])
+        design_blocks = [{
+            "type": "table",
+            "layer": "inference",
+            "columns": ["提案", "标题", "状态", "决定依据"],
+            "rows": [
+                [
+                    proposal["id"],
+                    proposal["title"],
+                    proposal.get("effective_status", "proposed"),
+                    (proposal.get("decision") or {}).get("rationale", ""),
+                ]
+                for proposal in proposals
+            ] or [["无", "无", "proposed", "尚未形成设计提案"]],
+        }]
+        artifacts = [
+            artifact
+            for proposal in proposals
+            for artifact in proposal.get("artifacts", [])
+        ]
+        if artifacts:
+            design_blocks.extend([
+                {"type": "heading", "level": 3, "text": "设计产物"},
+                {
+                    "type": "list",
+                    "layer": "inference",
+                    "items": [
+                        f"{artifact['id']} {artifact['title']}：{artifact['summary']}"
+                        for artifact in artifacts
+                    ],
+                },
+            ])
+        if design_baseline.get("advisory_panels"):
+            design_blocks.extend([
+                {"type": "heading", "level": 3, "text": "研究顾问委员会"},
+                {
+                    "type": "list",
+                    "layer": "inference",
+                    "items": [
+                        f"{panel['question']}：{panel['synthesis']}"
+                        for panel in design_baseline["advisory_panels"]
+                    ],
+                },
+            ])
+        if design_baseline.get("specialist_tasks"):
+            design_blocks.extend([
+                {"type": "heading", "level": 3, "text": "研究专员任务"},
+                {
+                    "type": "list",
+                    "layer": "inference",
+                    "items": [
+                        f"{task['task']}：{task['summary']}（{task['status']}）"
+                        for task in design_baseline["specialist_tasks"]
+                    ],
+                },
+            ])
+        section("design-baseline", "设计基线", design_blocks)
 
     items = model.get("items", [])
     rows = [
@@ -1283,7 +1965,7 @@ def build_synthesis_document(
     section("details", "分主题进展", [] if items else [{
         "type": "paragraph",
         "layer": "unknown",
-        "text": "用户尚未提供可归纳的工作主题。",
+        "text": "首席研究员尚未提供可归纳的工作主题。",
     }])
     sections.extend(item_sections)
 
@@ -1333,13 +2015,24 @@ def build_synthesis_report(
 ) -> dict:
     project = Path(project)
     model = None
+    design_baseline = None
     if snapshot_id:
         snapshot = load_work_snapshot(project, snapshot_id)
         model = snapshot["model"]
-    source = render_summary_markdown(project, model=model)
+        design_baseline = snapshot.get("design_baseline")
+    source = render_summary_markdown(
+        project,
+        model=model,
+        design_baseline=design_baseline,
+    )
     from .render import render_html, write_document
 
-    document = build_synthesis_document(project, model=model, snapshot_id=snapshot_id)
+    document = build_synthesis_document(
+        project,
+        model=model,
+        snapshot_id=snapshot_id,
+        design_baseline=design_baseline,
+    )
     document_path = write_document(project, document)
     html_path = render_html(project, document)
     outputs = {

@@ -1,0 +1,113 @@
+[
+  {
+    "id": "r-0001",
+    "type": "round",
+    "process": "design",
+    "topic": "design-topic",
+    "topic_title": "设计主题",
+    "related_work_items": ["w-0001"],
+    "goal": "形成一份可接受的设计基线"
+  },
+  {
+    "id": "ap-0001",
+    "type": "advisory_panel",
+    "round": "r-0001",
+    "question": "需要多位研究顾问独立评估什么问题？",
+    "mandate": "说明本次委员会的委托范围",
+    "mode": "heterogeneous",
+    "status": "completed",
+    "convened_by": "assistant_researcher",
+    "members": [
+      {
+        "advisor_id": "adv-a",
+        "role": "research_advisor",
+        "mandate": "视角 A",
+        "summary": "研究顾问 A 的独立结论",
+        "uncertainties": []
+      },
+      {
+        "advisor_id": "adv-b",
+        "role": "research_advisor",
+        "mandate": "视角 B",
+        "summary": "研究顾问 B 的独立结论",
+        "uncertainties": []
+      }
+    ],
+    "synthesis": "主代理对独立意见的综合，不采用简单多数票",
+    "unresolved_disagreements": ["仍有分歧的问题"],
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "sp-0001",
+    "type": "specialist_task",
+    "round": "r-0001",
+    "task": "研究专员完成的一站式任务",
+    "requested_by": "assistant_researcher",
+    "executed_by": "research_specialist",
+    "status": "completed",
+    "scope": ["任务范围 A"],
+    "summary": "任务结果",
+    "limitations": ["结果限制"],
+    "unresolved": ["未解决问题"],
+    "outputs": [{"summary": "不落文件的结构化结果"}],
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "dp-0001",
+    "type": "design_proposal",
+    "round": "r-0001",
+    "proposed_by": "assistant_researcher",
+    "panel": "ap-0001",
+    "title": "设计提案",
+    "problem": "要解决的问题",
+    "constraints": ["约束 A"],
+    "options": [
+      {"id": "option-a", "summary": "备选 A", "tradeoffs": ["代价 A"]},
+      {"id": "option-b", "summary": "备选 B", "tradeoffs": ["代价 B"]}
+    ],
+    "recommendation": "推荐方案及理由",
+    "risks": ["主要风险"],
+    "tbd": ["只能通过后续实验或使用确定的 TBD"],
+    "related_work_items": ["w-0001"],
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "da-0001",
+    "type": "design_artifact",
+    "round": "r-0001",
+    "proposal": "dp-0001",
+    "created_by": "assistant_researcher",
+    "kind": "research-design",
+    "title": "设计产物",
+    "summary": "设计产物的内容和用途",
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "dd-0001",
+    "type": "design_decision",
+    "round": "r-0001",
+    "proposal": "dp-0001",
+    "outcome": "accepted",
+    "decided_by": "principal",
+    "rationale": "首席研究员接受该设计的理由",
+    "conditions": ["接受条件"],
+    "materials": ["u-0001"]
+  },
+  {
+    "id": "g-0001",
+    "type": "alignment",
+    "round": "r-0001",
+    "summary": "设计结果和未决项已经对齐。",
+    "narrative": "完整说明设计问题、备选、取舍、决定和 TBD。",
+    "items": [
+      {
+        "id": "ai-0001",
+        "statement": "采用推荐设计并保留 TBD",
+        "status": "accepted",
+        "materials": ["u-0001"],
+        "related_work_items": ["w-0001"]
+      }
+    ],
+    "next_steps": ["补齐 TBD"]
+  }
+]

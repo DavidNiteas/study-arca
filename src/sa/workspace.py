@@ -273,14 +273,14 @@ def _validate_provided(project: Path, errors: list[str]) -> None:
     try:
         data = json.loads(manifest.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError) as exc:
-        errors.append(f"用户材料清单不是合法 JSON：{exc}")
+        errors.append(f"首席研究员材料清单不是合法 JSON：{exc}")
         return
     if not isinstance(data, dict) or data.get("schema") != PROVIDED_SCHEMA:
-        errors.append(f"用户材料清单 schema 必须是 {PROVIDED_SCHEMA}")
+        errors.append(f"首席研究员材料清单 schema 必须是 {PROVIDED_SCHEMA}")
         return
     items = data.get("items")
     if not isinstance(items, list):
-        errors.append("用户材料清单 items 必须是数组")
+        errors.append("首席研究员材料清单 items 必须是数组")
         return
     seen: set[str] = set()
     for index, item in enumerate(items):
@@ -323,13 +323,13 @@ def add_provided_input(
     project = Path(project).resolve()
     source = Path(source).resolve()
     if role not in PROVIDED_ROLES:
-        raise ProjectError(f"用户材料 role 必须是 {sorted(PROVIDED_ROLES)}")
+        raise ProjectError(f"首席研究员材料 role 必须是 {sorted(PROVIDED_ROLES)}")
     if authority not in PROVIDED_AUTHORITY:
-        raise ProjectError(f"用户材料 authority 必须是 {sorted(PROVIDED_AUTHORITY)}")
+        raise ProjectError(f"首席研究员材料 authority 必须是 {sorted(PROVIDED_AUTHORITY)}")
     if verification not in PROVIDED_VERIFICATION:
-        raise ProjectError(f"用户材料 verification 必须是 {sorted(PROVIDED_VERIFICATION)}")
+        raise ProjectError(f"首席研究员材料 verification 必须是 {sorted(PROVIDED_VERIFICATION)}")
     if not source.is_file():
-        raise ProjectError(f"用户材料不存在：{source}")
+        raise ProjectError(f"首席研究员材料不存在：{source}")
 
     root = project / "brief/provided"
     manifest_path = root / "manifest.json"
@@ -338,7 +338,7 @@ def add_provided_input(
         "items": [],
     }) or {}
     if manifest.get("schema") != PROVIDED_SCHEMA or not isinstance(manifest.get("items"), list):
-        raise ProjectError("用户材料清单格式非法")
+        raise ProjectError("首席研究员材料清单格式非法")
     numbers = []
     for item in manifest["items"]:
         item_id = item.get("id", "") if isinstance(item, dict) else ""
@@ -348,7 +348,7 @@ def add_provided_input(
     item_id = f"u-{max(numbers, default=0) + 1:04d}"
     destination_dir = root / item_id
     if destination_dir.exists():
-        raise ProjectError(f"用户材料目录已存在：{destination_dir}")
+        raise ProjectError(f"首席研究员材料目录已存在：{destination_dir}")
     destination_dir.mkdir(parents=True)
     destination = destination_dir / source.name
     try:

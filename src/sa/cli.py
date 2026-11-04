@@ -221,7 +221,7 @@ def cmd_status(args) -> int:
     print(f"状态：{counts['status']}")
     print(f"工单：{counts['workspace']['work_orders']} "
           f"(待处理 {counts['workspace']['work_orders_open']})")
-    print(f"用户材料：{counts['workspace']['provided_inputs']}  "
+    print(f"首席研究员材料：{counts['workspace']['provided_inputs']}  "
           f"引用：{counts['workspace']['references']}")
     if counts["workspace"].get("workspace_type") == "research":
         print(f"来源：{counts['sources']}  "
@@ -274,7 +274,7 @@ def cmd_input(args) -> int:
         authority=args.authority,
         verification=args.verification,
     )
-    print(f"已登记用户材料：{item['id']}  {destination}")
+    print(f"已登记首席研究员材料：{item['id']}  {destination}")
     return 0
 
 
@@ -393,8 +393,22 @@ def cmd_synthesis(args) -> int:
                 topic = round_record.get("topic_title") or round_record["goal"]
                 print(
                     f"{round_record['id']}  {round_record['status']:<6}  "
-                    f"{topic}  decision={round_record['decision']}"
+                    f"{topic}  process={round_record.get('process') or 'legacy'}  "
+                    f"route={round_record['decision']}"
                 )
+                if any(round_record.get(field) for field in (
+                    "design_proposals",
+                    "design_decisions",
+                    "advisory_panels",
+                    "specialist_tasks",
+                )):
+                    print(
+                        "  design: "
+                        f"proposals={round_record['design_proposals']} "
+                        f"decisions={round_record['design_decisions']} "
+                        f"panels={round_record['advisory_panels']} "
+                        f"specialists={round_record['specialist_tasks']}"
+                    )
                 if round_record.get("children"):
                     print(f"  children: {', '.join(round_record['children'])}")
                 for question in round_record["questions"]:
@@ -403,7 +417,10 @@ def cmd_synthesis(args) -> int:
                         f"{question['answer']:<10}  {question['text']}"
                     )
             for snapshot in value["snapshots"]:
-                print(f"snapshot {snapshot['id']}  {snapshot['round']}  {snapshot['label']}")
+                print(
+                    f"snapshot {snapshot['id']}  {snapshot['round']}  "
+                    f"{snapshot['baseline_kind']}  {snapshot['label']}"
+                )
         return 0
     if args.action == "apply":
         if not args.file:
@@ -417,7 +434,13 @@ def cmd_synthesis(args) -> int:
     if args.action == "snapshot":
         if not args.id or not args.label or not args.round:
             raise ProjectError("synthesis snapshot 需要 --id、--label 和 --round")
-        print(create_snapshot(project, args.id, args.label, args.round))
+        print(create_snapshot(
+            project,
+            args.id,
+            args.label,
+            args.round,
+            baseline_kind=args.baseline,
+        ))
         return 0
     if args.action == "alignment":
         if not args.round:
@@ -431,7 +454,7 @@ def cmd_synthesis(args) -> int:
             "id": args.id,
             "type": "decision",
             "round": args.round,
-            "actor": "user",
+            "actor": "principal",
             "decision": args.decision,
             "rationale": args.rationale,
             "materials": args.material or [],
@@ -1085,7 +1108,7 @@ def build_parser() -> argparse.ArgumentParser:
     work.add_argument("--json", action="store_true")
     work.set_defaults(func=cmd_work)
 
-    input_parser = sub.add_parser("input", help="登记用户提供的材料")
+    input_parser = sub.add_parser("input", help="登记首席研究员提供的材料")
     input_parser.add_argument("action", choices=["add"])
     input_parser.add_argument("project")
     input_parser.add_argument("--file", required=True)
@@ -1136,7 +1159,7 @@ def build_parser() -> argparse.ArgumentParser:
     ref.add_argument("--search-root")
     ref.set_defaults(func=cmd_ref)
 
-    synthesis = sub.add_parser("synthesis", help="总结型工作区模型、复盘对齐与报告")
+    synthesis = sub.add_parser("synthesis", help="总结型工作区复盘、设计、对齐、基线与报告")
     synthesis.add_argument(
         "action",
         choices=[
@@ -1149,6 +1172,11 @@ def build_parser() -> argparse.ArgumentParser:
     synthesis.add_argument("--label")
     synthesis.add_argument("--round")
     synthesis.add_argument("--snapshot")
+    synthesis.add_argument(
+        "--baseline",
+        choices=["knowledge", "design", "mixed"],
+        help="冻结的基线类型；省略时按轮次过程自动推断",
+    )
     synthesis.add_argument("--decision", choices=["exit", "continue", "drill_down", "park"])
     synthesis.add_argument("--rationale")
     synthesis.add_argument("--target-topic")

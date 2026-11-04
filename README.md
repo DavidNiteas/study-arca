@@ -20,6 +20,7 @@ python scripts/sa.py selftest
 - 工作区本地工单、首席研究员材料清单、物化引用和作用域方言。
 - Program superproject、Git submodule pin 与显式 cloneable 检查。
 - Synthesis 工作模型、复盘-对齐记录、标准对齐产物、冻结快照追踪与 HTML/Word 汇总报告生成。
+- 设计提案/决定/产物、研究顾问委员会、研究专员任务以及 knowledge/design/mixed 基线。
 - Synthesis 主题树与首席研究员控制的循环出口：继续、下钻、暂挂或跳出。
 - 首席研究员、主代理双身份、研究顾问委员会与研究专员的研究协作角色。
 - 来源信封、claim/fact/conflict 台账与置信度校验。
