@@ -2,7 +2,7 @@
 
 [中文](../README.md) | English
 
-This directory is the English-language companion to the Chinese normative documentation. It is organized by task and role. The Chinese files remain the canonical normative text when wording differs.
+This directory is the English-language companion for **human-facing** documentation. Agent-facing instructions remain Chinese-only. The Chinese files remain the canonical normative text when wording differs.
 
 ## Choose an entry point
 
@@ -15,7 +15,7 @@ This directory is the English-language companion to the Chinese normative docume
 | Review and design | [Synthesis and output](16-synthesis-and-output.md), [Collaboration roles](17-collaboration-roles.md) |
 | Reports and PPT | [Report orchestration](18-report-orchestration.md), [PPT design](11-ppt-design.md), [Delivery and PPT](07-delivery-and-ppt.md) |
 | Product components | [Product components](14-product-components.md), [System scope](12-system-scope.md) |
-| Agent continuation | [Agent protocol](10-agent-protocol.md) |
+| Agent continuation | [Agent protocol](../10-代理工作协议.md) (Chinese only) |
 
 ## System model
 
@@ -51,7 +51,6 @@ Program
 | [07 · 交付与 PPT](../07-交付与PPT.md) | [Delivery and PPT](07-delivery-and-ppt.md) |
 | [08 · 调研军火库](../08-调研军火库.md) | [Research toolbox](08-research-toolbox.md) |
 | [09 · 专业调研循环](../09-专业调研循环.md) | [Research loop](09-research-loop.md) |
-| [10 · 代理工作协议](../10-代理工作协议.md) | [Agent protocol](10-agent-protocol.md) |
 | [11 · PPT 设计方法](../11-PPT设计方法与模式.md) | [PPT design](11-ppt-design.md) |
 | [12 · 系统定位](../12-系统定位与能力管理.md) | [System scope](12-system-scope.md) |
 | [13 · 研究分析](../13-研究分析与论证.md) | [Research analysis](13-analysis-and-argument.md) |
@@ -78,3 +77,4 @@ Program
 - Keep paths, commands, and implementation status aligned with the product tree.
 - Cases entering the product repository must be stripped of project identity, objects, version/page statistics, local paths, personnel information, and unauthorized screenshots.
 - Hard constraints should map to lint, schema checks, stage gates, or review checklists.
+- `AGENTS.md`, `.agents/` skills, and the agent work protocol are agent-facing and stay Chinese-only. Do not add English companions for them.

@@ -2,7 +2,7 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-06T00:47:20+08:00",
+  "generated_at": "2026-11-06T00:48:59+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
@@ -11,9 +11,9 @@
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "a52063469aadcd7f4954b2d187322f55c170fe75"
+    "commit": "1b6997eaacd0f64f0db460e0228407d512d26b56"
   },
-  "tree_sha256": "20b338cecd785ced380ce9f98af6091d801c525a4177b88f9b0f1ab190a1db81",
+  "tree_sha256": "1deb2b45bc17c76238353dcdff5b0e376063037585a3675c44588b6ef9c564a8",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "ee96206202544d099da500aa6d37099c2e7bac0242e8604468f0656281c364ba",
@@ -37,7 +37,7 @@
     "docs/07-交付与PPT.md": "90cc53e1eb417d498374a1184e04c4b3baf25497491ed48577c86c785b832600",
     "docs/08-调研军火库.md": "35821b4a3a56d3a757468d41e615b08b2e61dea3722246d6f529d9f76336aaa1",
     "docs/09-专业调研循环.md": "a141632aa833cbc0305de7f1275f4d37b74bc54bb345843f168be0e923e9a145",
-    "docs/10-代理工作协议.md": "fbd84bc9ea3de262b227a7c86cf40f178e63573988b13d521d60e84e18cacb20",
+    "docs/10-代理工作协议.md": "4b26cd9ac290221eb3f75f036549ae755cecafc08fd82dc91bae597ddaa28e01",
     "docs/11-PPT设计方法与模式.md": "24d0e135dd1ef2ba0918349fdbd71720d009984d1fe23a54cb4daa35869f6985",
     "docs/12-系统定位与能力管理.md": "e34a374fe2b13482c04315601fcb77d27af225c783982253c64b67396baf13cc",
     "docs/13-研究分析与论证.md": "9e97ff01df2672594ba7320d13db787636bb70c280f26693fcbefede3ea6139e",
@@ -46,7 +46,7 @@
     "docs/16-复盘对齐与适配输出.md": "cfaf3222683fc498d94be16c9853403713f50dec60af777e480df403b645a650",
     "docs/17-研究协作角色.md": "bb710a1d7526e2722035343a9f00a55663959b106dec5c7cafbd4bfebb8474d3",
     "docs/18-报告编排与输出.md": "62f5878815ccb15721ceadf257af5b62ee7d8490de21788f0ab59a46be919b45",
-    "docs/README.md": "4a37774888fb2555d3e03ebfc128dabcc40bc769a9f0ce319f27d9471e84ffa8",
+    "docs/README.md": "77a09728f7226a81deabb203a402be32b257d62db88ca4510598cd8e3f748fbe",
     "docs/en/00-getting-started.md": "d198abd28033a9f10ea1168d6e302eb2941847a3b4ee3483595a635fa12bcf68",
     "docs/en/01-research-principles.md": "b4ed6ac8cd800d4a3abe6c154885b72cfe87471175118829d57cf31395febc7e",
     "docs/en/02-project-layout.md": "4397a900fc78080f2bdefaab56205deeab7bd9a4b1798388b9059598eb2a7976",
@@ -57,7 +57,6 @@
     "docs/en/07-delivery-and-ppt.md": "b4fe2df2badeb8253ded8080cfd31da492f88872237bebecf9b1311ec8f196ca",
     "docs/en/08-research-toolbox.md": "5e9be49855dbfe97a4e30444a084f40f1e3db586ee51ccb1d71368fa8f8fb814",
     "docs/en/09-research-loop.md": "c11ed88aceffd79da910c6e197fa898d8c87b5d617c22a4bcefdcf0ab817972b",
-    "docs/en/10-agent-protocol.md": "a1d4860b704f831616d47880c9a9fbbf64e792b15bdf186ec10db2979be013ea",
     "docs/en/11-ppt-design.md": "7d717d9c7d82a8b91d992c97cd2b6dd240c73f8fc6d8fbe65c0e2cb93a0aa5ae",
     "docs/en/12-system-scope.md": "534df0e2d650a8b29444fad8589accd01ff62222df7168d1f6f3e0d58bfa559d",
     "docs/en/13-analysis-and-argument.md": "05fa3290203407bd9ea2366578b0087255a6295d860bf55182252f7678e7bbe2",
@@ -66,7 +65,7 @@
     "docs/en/16-synthesis-and-output.md": "c5ced6bbbcf9af6b0b4554ec823548d8f8a888e4b41de512af6cbb416199b3ff",
     "docs/en/17-collaboration-roles.md": "4bfe145fa76b3a166836036b6513faae30e6581609248d4acf7f0204188acbd9",
     "docs/en/18-report-orchestration.md": "95f332ecbe21ebf71a7c87046c725c3a5aab3ee30d535743854144fd742497ca",
-    "docs/en/README.md": "bcfdb5dc79f93258dbbaee7ae8e64808bc3c61fa29b5803b429c54a99f843c47",
+    "docs/en/README.md": "d35be494bc4fb7fcd09ec5b5d35cebe360e75d188f61ed72e923bf721eaef47d",
     "docs/en/presentation/README.md": "4ce2128ef57aa16dcfb59e0187d38ee5d64551291f9d0482fab97885a45b5d35",
     "docs/en/presentation/fungicide-diagrams.md": "0ff14c9896b0aa55b63ab81f5b7c7f85c39b4128d8b537274042fe9b3119f421",
     "docs/en/presentation/long-research-deck.md": "78fe927112391e82ba319023ad8870df6de66cbc229129a2d2d4c8100f78900c",
