@@ -1,5 +1,7 @@
 # Study Arca 文档中心
 
+中文 | [English](en/README.md)
+
 这里是面向人的文档入口，也是产品规范的权威索引。第一次使用先读 [00 · 使用指南](00-使用指南.md)；需要精确字段、阶段门或交付规则时，再进入对应规范。
 
 ## 先选你的入口
@@ -69,8 +71,8 @@ Program
 以下 `sa` 是 `python scripts/sa.py` 的命令简写。
 
 ```powershell
-# 新建工作区
-sa new <slug> --title <title> --type research|synthesis
+# 新建工作区（推荐显式指定 Program）
+sa new <slug> --title <title> --type research|synthesis --program <path>
 
 # research
 sa cycle init|status|lint <workspace>

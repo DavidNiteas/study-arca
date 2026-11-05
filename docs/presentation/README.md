@@ -1,4 +1,6 @@
-﻿# 呈现设计案例索引
+# 呈现设计案例索引
+
+中文 | [English](../en/presentation/README.md)
 
 案例解释设计判断，不提供可直接套用的成品模板。方法权威见 [11](../11-PPT设计方法与模式.md)，新增记录参照 [案例记录](../../templates/ppt/design-case.md)。本目录内容可脱离业务 workspace 阅读；项目成果留在独立仓。
 

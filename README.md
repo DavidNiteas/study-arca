@@ -1,5 +1,7 @@
 # Study Arca · 信息资产工程系统
 
+中文 | [English](README.en.md)
+
 Study Arca 把研究信息当作**可寻址、可引用、可验证、可版本化的信息资产**，并通过受约束的工具链，把这些资产投影为报告、演示、网页和其他可交付产物。
 
 它不只管理“文档”，而是管理信息从来源、理解、设计、冻结、编排到发布的整个生命周期。
@@ -120,11 +122,12 @@ PPT 编译是有设计的压缩，不是无损复制。编译器必须保证被�
 ## 快速开始
 
 ```powershell
-# 新建 research 工作区
-python scripts/sa.py new market-scan --title "市场扫描" --type research
+# 首次使用：在用户选择的位置创建 Program
+python scripts/sa.py program init <program-path> --id prog-main --title "我的研究 Program"
 
-# 新建 synthesis 工作区
-python scripts/sa.py new project-review --title "阶段复盘" --type synthesis
+# 在 Program 中创建工作区
+python scripts/sa.py new market-scan --title "市场扫描" --type research --program <program-path>
+python scripts/sa.py new project-review --title "阶段复盘" --type synthesis --program <program-path>
 
 # 查看工具能力
 python scripts/sa.py --help
@@ -136,7 +139,7 @@ python scripts/sa.py deck --help
 python scripts/sa.py selftest
 ```
 
-`sa new` 默认把工作区创建在 `work-root/nodes/`，并为每个工作区建立独立 Git 仓库。根 `work-root/` 本身是 Program。
+Program 根按 `--program`、`SA_PROGRAM_ROOT`、当前目录祖先中的 `program.json` 依次发现。旧产品内 `work-root/` 与 `workspace/` 只作兼容并提示迁移。显式指定 Program 时，新工作区创建在 `<program>/nodes/`，保留独立 Git 仓库并挂载为 Program 子节点。
 
 ## 典型流程
 
@@ -213,7 +216,7 @@ study-arca/
 ├── docs/                # 人类文档与权威规范
 ├── templates/           # 项目、报告、PPT 与研究模板
 ├── .agents/skills/      # 代理任务入口
-├── work-root/           # 本地根 Program；项目是独立 Git 子模块
+├── ...                  # 产品仓不包含默认 Program
 ├── LICENSE
 ├── README.md
 ├── AGENTS.md
@@ -221,7 +224,7 @@ study-arca/
 └── RELEASE.json
 ```
 
-`work-root/` 由根 `.gitignore` 排除，不属于产品 Git 历史。研究项目中的第三方材料和数据可能适用单独许可，需在各自项目中核验。
+Program 由用户在产品目录之外显式创建和管理，不属于产品 Git 历史。研究项目中的第三方材料和数据可能适用单独许可，需在各自项目中核验。
 
 ## 版本与发布
 

@@ -29,7 +29,7 @@
 ## 环境绑定
 
 - 平台：Windows；Python 3.11，命令使用 `python`。
-- 工作区：优先 `work-root/`，迁移期兼容 `workspace/`；每个 `p-*` 项目目录各自一个 Git 仓库。
+- 工作区根按 `--program`、`SA_PROGRAM_ROOT`、最近祖先 `program.json` 的顺序发现；旧 `work-root/` 与 `workspace/` 仅作兼容。
 - 验证：
 
 ```powershell
@@ -40,7 +40,7 @@ python scripts/sa.py lint <project-dir>
 
 ## 工作区纪律
 
-- `work-root/` 是独立根 program；不把 `work-root/` 内容纳入产品仓，也不把成员工作区合并进同一个 Git 历史。
+- Program 是位置由用户选择的独立仓库；产品仓不包含默认 Program，也不把 Program 或成员工作区纳入产品 Git 历史。
 - 不修改发布仓中的框架文件来承载单个项目特例。
 - 项目专用脚本只调用 `scripts/sa.py` 的公开接口。
 - 新研究的问题、轮次、讨论和回答以项目 `research/cycle.json` 为准。

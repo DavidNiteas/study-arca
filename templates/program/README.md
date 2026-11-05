@@ -2,9 +2,11 @@
 
 Program 是只引用子节点的 Git superproject，不保存工作区事实。直接子节点使用
 Git submodule 挂载到 `nodes/<node-id>/`；版本由 program 提交中的 gitlink 固定。
+Program 应位于用户选择的产品目录之外；产品仓不包含默认数据根。
 
 ```powershell
 python scripts/sa.py program init <path> --id prog-example --title "示例"
+python scripts/sa.py new <slug> --title "示例工作区" --program <path>
 python scripts/sa.py program attach <program> <workspace> --path nodes/<id>
 python scripts/sa.py program status <program>
 python scripts/sa.py program check <program>

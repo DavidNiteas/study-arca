@@ -80,14 +80,23 @@ def _print_report(report, as_json: bool = False) -> None:
 
 
 def cmd_new(args) -> int:
+    from .project import resolve_workspace_root
+    from .program import attach_node
+
+    selection = resolve_workspace_root(root=args.root, program=args.program)
+    if selection.warning:
+        print(f"[WARN] {selection.warning}")
+    print(f"工作区根：{selection.path}  ({selection.source})")
     dest = new_project(
         args.slug,
         args.title,
-        args.root,
+        selection.path,
         args.date,
         workflow=args.workflow,
         workspace_type=args.workspace_type,
     )
+    if selection.program is not None:
+        attach_node(selection.program, dest)
     print(f"已创建：{dest}")
     print(f"工作区类型：{args.workspace_type}")
     print(f"独立仓库：{'已初始化' if (dest / '.git').exists() else '未初始化（检查 git）'}")
@@ -1204,7 +1213,8 @@ def build_parser() -> argparse.ArgumentParser:
     new = sub.add_parser("new", help="新建工作区")
     new.add_argument("slug")
     new.add_argument("--title", default=None)
-    new.add_argument("--root", default=None, help="工作区根目录，默认 <repo>/work-root（兼容 workspace）")
+    new.add_argument("--root", default=None, help="底层工作区容器；未提供 --program 时也可自动发现 Program")
+    new.add_argument("--program", default=None, help="Program 根目录；Workspace 将创建到其 nodes/ 并挂载")
     new.add_argument("--date", default=None, help="YYYY-MM-DD，默认今天")
     new.add_argument("--type", dest="workspace_type", choices=sorted(WORKSPACE_TYPES), default="research")
     new.add_argument("--workflow", choices=["cycle", "legacy"], default="cycle")

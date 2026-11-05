@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import sys
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -27,14 +29,80 @@ class ProjectError(Exception):
     pass
 
 
+@dataclass(frozen=True)
+class WorkspaceRootSelection:
+    path: Path
+    program: Path | None
+    source: str
+    warning: str | None = None
+
+
+def _validated_program(path: Path, source: str, warning: str | None = None) -> WorkspaceRootSelection:
+    from .program import load_program
+
+    program = path.resolve()
+    load_program(program)
+    return WorkspaceRootSelection(
+        path=program / "nodes",
+        program=program,
+        source=source,
+        warning=warning,
+    )
+
+
+def resolve_workspace_root(
+    *,
+    root: Path | str | None = None,
+    program: Path | str | None = None,
+    cwd: Path | str | None = None,
+) -> WorkspaceRootSelection:
+    """Resolve a workspace container without assuming it lives inside the product."""
+    if root is not None and program is not None:
+        raise ProjectError("--root 与 --program 不能同时使用")
+    if root is not None:
+        return WorkspaceRootSelection(Path(root).resolve(), None, "explicit-root")
+    if program is not None:
+        return _validated_program(Path(program), "explicit-program")
+    configured = os.environ.get("SA_PROGRAM_ROOT")
+    if configured:
+        return _validated_program(Path(configured), "environment")
+
+    current = Path(cwd or Path.cwd()).resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / "program.json").is_file():
+            return _validated_program(candidate, "ancestor")
+
+    legacy_work_root = REPO_ROOT / "work-root"
+    if legacy_work_root.is_dir():
+        if (legacy_work_root / "program.json").is_file():
+            return _validated_program(
+                legacy_work_root,
+                "legacy-product-program",
+                "正在使用产品目录内的兼容 Program，建议迁移到独立路径",
+            )
+        return WorkspaceRootSelection(
+            legacy_work_root,
+            None,
+            "legacy-product-root",
+            "正在使用产品目录内未初始化的兼容根，建议执行 sa program init",
+        )
+    legacy_workspace = REPO_ROOT / "workspace"
+    if legacy_workspace.is_dir():
+        return WorkspaceRootSelection(
+            legacy_workspace,
+            None,
+            "legacy-workspace",
+            "正在使用已退役的 workspace/ 根，建议迁移到独立 Program",
+        )
+    raise ProjectError(
+        "未找到 Program 根。请使用 --program <path>、设置 SA_PROGRAM_ROOT，"
+        "先在当前目录向上某级执行 sa program init，或使用 --root 指定底层工作区容器"
+    )
+
+
 def workspace_root() -> Path:
-    work_root = REPO_ROOT / "work-root"
-    legacy = REPO_ROOT / "workspace"
-    if work_root.is_dir():
-        return work_root
-    if legacy.is_dir():
-        return legacy
-    return work_root
+    """Compatibility helper; new code should use resolve_workspace_root."""
+    return resolve_workspace_root().path
 
 
 def _now() -> datetime:
@@ -85,7 +153,7 @@ def new_project(
     day = date or now.strftime("%Y-%m-%d")
     compact = day.replace("-", "")
     project_id = f"p-{compact}-{slug}"
-    root_path = Path(root) if root else workspace_root()
+    root_path = Path(root).resolve() if root else resolve_workspace_root().path
     dest = root_path / project_id
     if dest.exists():
         raise ProjectError(f"目录已存在：{dest}")
