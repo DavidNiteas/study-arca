@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T17:41:35+08:00",
+  "generated_at": "2026-11-05T18:03:50+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "86b7a370bd73fdf8f7f2dfef74ae4e484a465702"
+    "commit": "f5f0835ac9647aca60c7c0ffa00bbe23502b1ada"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "27b57fbf92ac146bcfcd5f48d85c207bded3ac5a"
+    "commit": "cb9593415007bb01f9977ee8a821d01fe63dbc70"
   },
-  "tree_sha256": "1e1aec26474e6cc50a8189dac50a87a2dbe1b0d01407f031096a2bb903cc2d25",
+  "tree_sha256": "d9d78d121345ea058a37180533dbac319d6071f940d9d24c1ed04b3237fd42e8",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "ee96206202544d099da500aa6d37099c2e7bac0242e8604468f0656281c364ba",
@@ -24,7 +24,7 @@
     "AGENTS.md": "d226fc6c167d607a536aa9af373b7d528befdd452c30efde1090eb23d8b2ea38",
     "HANDOVER.md": "a3b159e4555b73644fc6fdae49d7809428ad2ff51ac73ec6b021646f85dc2065",
     "LICENSE": "c8bc8cd66076ca949cff00108295172db43ddf9c8c606e5e60f2677d19222f6c",
-    "README.md": "e76a741cf696649d13b1fc8be32a481b50832d9796f868a4346c0546532d7e35",
+    "README.md": "d94b49f6c7809ca59bc9d323412c5b7a98993e25a179435007c08ae254c04f3d",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/00-使用指南.md": "f94c1ceea56cf2e21b668d6159521d40731efd59a70635740a5ad5931e2d0b79",
     "docs/01-调研治理.md": "ee3e72ec757436d52e1b752120dad74ba496d8cd29699d1aa85f62ffe6734121",
