@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T09:20:54+08:00",
+  "generated_at": "2026-11-05T17:26:23+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "f6e98b1edbe59b0fc5fe77b644bc14696710a895"
+    "commit": "bdad05faad86bca80c39fab094b6443858f75d16"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "74c72625c940c250a761481c15ef14ea8477bef2"
+    "commit": "6a36b20f1cfc3cf7c9a3ed71e75990c140b46b2b"
   },
-  "tree_sha256": "d5b33dc9f3624c936c1a00174e317d6248530e13a090a73988a11e1b5b259d03",
+  "tree_sha256": "fe27a64be5fd0eabdec108b9eabb201ab42436a26e822db8c8e82f1b1b012c6b",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "8fb33acdd6d3697b73152e78450f5e2ad09664523b1a7a90efdb145ce089c916",
@@ -47,9 +47,9 @@
     "docs/README.md": "04692ab1beecfdf7f083bb00f85e41e060cf22c7bc454d5908a50b38410d3b04",
     "docs/legacy/01-调研治理.md": "97344b7bc0c7b9b3f2a5fd62bdc5a2b18534c2c386b8a69ba0c4f2ac2e0db964",
     "docs/legacy/04-工作流.md": "57deff08148a5889c035a28940e60105321443dc84573ce4581c5e9b9b0c85e8",
-    "docs/presentation/README.md": "1c7dc22e8239279cf1a7ced5866cc6449c64475cd0b98e5eddc5d2152d80fbfa",
+    "docs/presentation/README.md": "e49e33f85b226efe61bcab70dd4c0bcf8791d0801a509b0243417caaf7fa8c16",
     "docs/presentation/fungicide-diagrams.md": "248412e8f76f3dfa370db7e5b7a863d209eeeaae828b0ffc563e614feab3da65",
-    "docs/presentation/long-research-deck.md": "027be0f1efeacdd3c65ec81f4df9fea756e0409b8c0c5aa154e178fad2df8efa",
+    "docs/presentation/long-research-deck.md": "230f103da99cd971de78326eb8fb2a39f74da603b2a848a8c9887d4ec57b2123",
     "scripts/sa.py": "b0719283a712c4db43e2cc002ce7ddf0ee06a457406aae1bff4f969e4a7796df",
     "src/sa/__init__.py": "3617a5e47a55b6c34fd4c114434d03ca8d59ab99b715e840140f5e762a0e4c64",
     "src/sa/cli.py": "19008b5ebd8f405d7671c82e78112426499ac156f9b6aa378ec16fee7cf4b9c8",
