@@ -4,6 +4,7 @@ search/*/raw/
 # 用户显式生成的压缩包
 publish/packed/**/*.zip
 archive/**/*.zip
+archive/**/*.bundle
 
 # 用户临时投递区：登记前不入库
 brief/inbox/*

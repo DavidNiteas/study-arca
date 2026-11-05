@@ -4,6 +4,7 @@
 
 - `reports/<report-id>/pre-vX.Y-development.zip`：压缩恢复包，默认不进入 Git。
 - `reports/<report-id>/pre-vX.Y-development.manifest.json`：保留文件清单、源 SHA-256、归档 SHA-256、删除范围和省略策略。
+- `reports/<report-id>/pre-history-rewrite-vX.Y.bundle`：Git 历史重写前的完整仓库恢复包，默认不进入 Git。
 - 当前正式发布始终以 `publish/` 为准，本目录不作为当前研究事实来源。
 
 默认先生成计划，确认后执行：

@@ -129,7 +129,7 @@ sa report archive <project> --id <report-id> --before v1.0 --verify
 - `--keep-source` 只创建归档、不删除源；同名归档默认拒绝覆盖，替换需 `--force`。
 - 归档写入后先校验 ZIP 条目和 SHA-256，校验通过才允许删除源文件。v1.0 当前产物、评审记录和 `publish/` 不进入清理范围。
 - `--verify` 可随时复核现有归档的 manifest、ZIP 总哈希和逐文件哈希。
-- `archive/**/*.zip` 默认被 Git 忽略；manifest 入库用于记录恢复内容与归档哈希。
+- `archive/**/*.zip` 与历史重写备份 `archive/**/*.bundle` 默认被 Git 忽略；manifest/重写记录入库用于恢复内容与归档哈希。
 - 此机制压缩当前工作树和后续提交噪声，但**不会自动重写已有 Git 历史**。需要缩小 `.git` 历史体积时，另做显式历史维护和备份。
 
 ### 5.2 Git 历史维护

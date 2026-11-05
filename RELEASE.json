@@ -2,18 +2,18 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T09:10:00+08:00",
+  "generated_at": "2026-11-05T09:16:59+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
-    "commit": "cbfe30eca83825496bdd4b0bfa9153837b8763e3"
+    "commit": "fa1d26f7cf54dabfe6bf9302bcf4c70f36769ad3"
   },
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "b615c1c69a7363ce06521bb30260df2ca060ddaa"
+    "commit": "380742bb37e2d287bf291043ba75eed8b5281e8b"
   },
-  "tree_sha256": "bcc83a0139282e70ae37756799712ca3f4deedaee77f19e9edc5778034e5ac4f",
+  "tree_sha256": "d5b33dc9f3624c936c1a00174e317d6248530e13a090a73988a11e1b5b259d03",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "8fb33acdd6d3697b73152e78450f5e2ad09664523b1a7a90efdb145ce089c916",
@@ -27,12 +27,12 @@
     "README.md": "e0db2ca59bb878123706473553514c63b65c36b11e931de131200554216339b5",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/01-调研治理.md": "ee3e72ec757436d52e1b752120dad74ba496d8cd29699d1aa85f62ffe6734121",
-    "docs/02-项目布局.md": "973f5dab2d16fdd6ba3fed405f0bb7d39bc3c2a7833a8bbf156eb8371d1c074a",
+    "docs/02-项目布局.md": "813836d9d027d0ad62a17ec083692ecddba4a9618f7b210ebf93a88d444eb3b6",
     "docs/03-证据与溯源.md": "035506a22096c0b6fc7eb83377de9fac096a25f182919613c4c116490b9a1369",
     "docs/04-工作流.md": "be11116b8ea9532a0f889dbcc12b559de4af4cb5419901114bf6a8d127b61779",
     "docs/05-报告规范.md": "ab76362745f37342eafd88fc042e06129c75829f0d6bc2c7f7afb5c7693d6f24",
     "docs/06-数据源地图.md": "e14d88b063836b1d9beef71de20014f9aa29cbccd2ba26064d8c9cecd25e7c73",
-    "docs/07-交付与PPT.md": "f7acc9c71c77a52bdeaa6dcc19a020c6a52e2be94d8e7c7a72d83f76c076c8db",
+    "docs/07-交付与PPT.md": "363319aecbc30dbdcb167c8bb787a41af707a579f1df5d8b0d1fb5861a64a670",
     "docs/08-调研军火库.md": "fac6204053c507bc3f65833eda489bafd5338386d9c17848aacf396f0ba5fb07",
     "docs/09-专业调研循环.md": "92df4f8aac5100e7688cf3e297afc01271c89e6eb016794f10dcfc9d5e3ea4d8",
     "docs/10-代理工作协议.md": "33de093ff09c0b3befdc428bd3b36c4fb54a1ed9ef173ba5546c05afc32ef092",
@@ -90,7 +90,7 @@
     "templates/program/bin/program.sh": "3904c3e7b29f825308306902d8e2b17a974fd20fd021ff89bdefd06c90deb7df",
     "templates/program/program.json": "1bc29c99f7f14165fd73d47a1c0a7701e27be4bd781bcdcc7868954536ebf211",
     "templates/project/.gitattributes": "bab30130fdfb91398d08d6c47db0714ceb12fbc95ff6d8a44d66dbe84b0f56d1",
-    "templates/project/.gitignore": "9a6dd749b20133556c2667dab81d46539ece762c9c20018b95b0779533395237",
+    "templates/project/.gitignore": "2b8147dd181b610f6fafa5fd29f35237f8d5026bf41b28a46b75d0da539b9b14",
     "templates/project/_dev/01-目标与设计.md": "825cb87366bd4bfacfbae98c2d8a83238cc5d19f4eff50d1e37dadc59c82e8b8",
     "templates/project/_dev/02-调研路线图.md": "7173a5e95aad2ad61addeb4bfdce23dacf7ea9def3e0ac19b3013cdaeb11ca57",
     "templates/project/_dev/03-调研状态.md": "6b3961d8ab28d8fa8a5ef4aed60fd0d3253cf6542062a267ba857f86ebbe164f",
@@ -102,7 +102,7 @@
     "templates/project/analysis/findings/facts.json": "dd2283a550e9ff83260ecb2b5904f68f7bfde44f83fe15fede816ca608718d79",
     "templates/project/analysis/findings/结论草案.md": "d1a6d6761fa0035c905fba73e4481742e50bcdd063764d78d4d643c1b32ad8c5",
     "templates/project/analysis/research-ir/README.md": "e055b95bc053980ce06c8b9bfdd1db8dd6ea393de95bdbc74bff977b0018be71",
-    "templates/project/archive/README.md": "f6a2b62910270bca880ea270d8d5a6a3becad3d88f2f342e5505a10253709e90",
+    "templates/project/archive/README.md": "dc97ba424071cb324d02a4a4c2757343a1e9b1f1bd294723ac1bffe7aa056ae7",
     "templates/project/archive/reports/.gitkeep": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
     "templates/project/brief/brief.md": "00f70eb770f74cfbc28c38ee1de51ad876326a8b9ecd2acf036bd91aa853a62b",
     "templates/project/brief/inbox/README.md": "2bbd1710b32bdc478303ba0b9fa08b621a3cef418955c50acb020ed985468e7f",
