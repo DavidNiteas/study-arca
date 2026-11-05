@@ -547,6 +547,7 @@ def cmd_research_ir(args) -> int:
 
 
 def cmd_report(args) -> int:
+    from .report_archive import create_report_archive, verify_report_archive
     from .reporting import (
         build_report_document,
         build_report_output,
@@ -581,6 +582,52 @@ def cmd_report(args) -> int:
         return 0
     if not args.id:
         raise ProjectError(f"report {args.action} 需要 --id")
+    if args.action == "archive":
+        if not args.before:
+            raise ProjectError("report archive 需要 --before，例如 --before v1.0")
+        if args.verify:
+            if args.apply or args.keep_source or args.force:
+                raise ProjectError("--verify 不能与 --apply/--keep-source/--force 同时使用")
+            result = verify_report_archive(project, args.id, args.before)
+            if args.json:
+                print(json.dumps(result, ensure_ascii=False, indent=2))
+            else:
+                print(f"归档校验通过：{result['archive']['path']}")
+                print(f"归档 SHA-256：{result['archive']['sha256']}")
+            return 0
+        result = create_report_archive(
+            project,
+            args.id,
+            args.before,
+            preview_retention=args.preview_retention,
+            apply=args.apply,
+            keep_source=args.keep_source,
+            force=args.force,
+        )
+        if args.json:
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        elif not args.apply:
+            totals = result["totals"]
+            print(
+                f"归档计划：{len(result['versions'])} 个版本，"
+                f"{totals['artifact_files']} 个旧产物，"
+                f"{totals['preview_directories']} 个旧预览目录"
+            )
+            print(
+                f"保留 {totals['retained_files']} 个文件 / "
+                f"{totals['retained_bytes']} bytes；"
+                f"省略 {totals['omitted_files']} 个派生预览文件 / "
+                f"{totals['omitted_bytes']} bytes"
+            )
+            print("当前为计划模式；确认后加 --apply 才会创建归档并清理源文件")
+        else:
+            print(f"已创建归档：{result['archive']['path']}")
+            print(f"归档 SHA-256：{result['archive']['sha256']}")
+            if args.keep_source:
+                print("源文件已保留")
+            else:
+                print("旧版产物与预览目录已清理；当前版本和发布目录未改动")
+        return 0
     if args.action == "validate":
         errors = validate_report(project, args.id)
         for error in errors:
@@ -1326,7 +1373,7 @@ def build_parser() -> argparse.ArgumentParser:
     report = sub.add_parser("report", help="独立报告编排：内容映射、叙事、DOCX/HTML/PPT")
     report.add_argument(
         "action",
-        choices=["init", "validate", "document", "build", "register", "status"],
+        choices=["init", "validate", "document", "build", "register", "status", "archive"],
     )
     report.add_argument("project")
     report.add_argument("--id")
@@ -1334,6 +1381,17 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--format", action="append", choices=sorted(["docx", "html", "pptx"]))
     report.add_argument("--preview")
     report.add_argument("--json", action="store_true")
+    report.add_argument("--before", help="归档早于该发布阶段的内容，例如 v1.0")
+    report.add_argument("--apply", action="store_true", help="创建归档并清理源开发产物")
+    report.add_argument(
+        "--preview-retention",
+        choices=["summary", "full", "none"],
+        default="summary",
+        help="旧预览的归档范围；summary 仅保留总览图和 measurements.json",
+    )
+    report.add_argument("--keep-source", action="store_true", help="创建归档但保留旧源文件")
+    report.add_argument("--force", action="store_true", help="替换已存在的同名开发归档")
+    report.add_argument("--verify", action="store_true", help="校验已有开发归档的 manifest 和 ZIP")
     report.set_defaults(func=cmd_report)
 
     output = sub.add_parser("output", help="独立输出登记：DOCX、HTML 和 PPT")

@@ -11,6 +11,7 @@
 | `report.docx` | Word（生成物，可选） |
 | `deck.pptx` | PPT（生成物，可选） |
 | `rpt-NNNN/` | 正式独立报告：ReportPlan、来源映射、格式计划、产物和预览 |
+| `archive/reports/rpt-NNNN/`（项目根） | 项目级旧版本冷归档与 manifest；zip 默认不入 Git |
 
 ## 规则
 
@@ -28,6 +29,7 @@ python scripts/sa.py report init <project> --id rpt-0001 --title "..."
 python scripts/sa.py report validate <project> --id rpt-0001
 python scripts/sa.py report build <project> --id rpt-0001 --format html
 python scripts/sa.py report register <project> --id rpt-0001 --format html
+python scripts/sa.py report archive <project> --id rpt-0001 --before v1.0
 ```
 
 正式报告见 [docs/18](../../../docs/18-报告编排与输出.md)。根目录 `document.json` 等文件保留给旧 `synthesis build`/`render` 快捷路径；PPT 正式构建走 `sa report build --format pptx` 与 `sa deck preview`。

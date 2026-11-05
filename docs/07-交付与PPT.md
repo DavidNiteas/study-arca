@@ -112,6 +112,26 @@ publish/                       # 对外发布层，接收方只看这里
 - 版本目录**只读**：改稿另起 `v1.1`，并同步替换 `release/`；旧版本目录不改。
 - manifest 记录版本、日期、as-of、claims 版本、文件 sha256、复核级别；发布层 manifest 另记自包含检查结果（docx/pptx 无 External rels、HTML 无外部资源）。
 
+### 5.1 开发阶段历史归档
+
+发布版本进入稳定阶段后，旧 `v0.x` 开发产物会显著增加工作树噪声。使用以下命令先查看归档计划，再显式执行：
+
+```powershell
+sa report archive <project> --id <report-id> --before v1.0
+sa report archive <project> --id <report-id> --before v1.0 --apply
+sa report archive <project> --id <report-id> --before v1.0 --verify
+```
+
+- 默认只做计划，不修改文件；`--apply` 才创建归档并清理旧源。
+- 归档位于 `archive/reports/<report-id>/pre-vX.Y-development.zip`，同目录保留 manifest。
+- 默认 `--preview-retention summary`：保留每个旧版本的 PPTX、`all-slides-overview.jpg` 和 `measurements.json`；逐页 PNG、联系表与 PDF 视为可由 PPTX 重新生成的派生预览。
+- `--preview-retention full` 可保留完整预览，`none` 可只归档 PPTX。
+- `--keep-source` 只创建归档、不删除源；同名归档默认拒绝覆盖，替换需 `--force`。
+- 归档写入后先校验 ZIP 条目和 SHA-256，校验通过才允许删除源文件。v1.0 当前产物、评审记录和 `publish/` 不进入清理范围。
+- `--verify` 可随时复核现有归档的 manifest、ZIP 总哈希和逐文件哈希。
+- `archive/**/*.zip` 默认被 Git 忽略；manifest 入库用于记录恢复内容与归档哈希。
+- 此机制压缩当前工作树和后续提交噪声，但**不会自动重写已有 Git 历史**。需要缩小 `.git` 历史体积时，另做显式历史维护和备份。
+
 ## 6. 交付验收
 
 - [ ] 三种格式的结论、数字、口径一致（以 `facts.json` 为准）
