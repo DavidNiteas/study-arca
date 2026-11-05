@@ -2,6 +2,8 @@
 
 Study Arca 提供一套可追溯、可复核、可版本化的专业调研工作流。系统把立项、调研、分析、讨论和呈现组织成持续反馈循环，并用来源、结论、冲突和基准事实记录支撑研究表达。
 
+第一次使用请从 [面向人的使用指南](docs/00-使用指南.md) 开始；需要精确字段、阶段门或交付规则时，再进入 [规范中心](docs/README.md)。
+
 ## 快速开始
 
 ```powershell
@@ -16,18 +18,17 @@ python scripts/sa.py selftest
 
 - 五域研究循环：立项、调研、分析、讨论、呈现。
 - 两类工作区身份：`research` 与 `synthesis`，身份写入工作区元信息。
-- Synthesis 的双过程业务：复盘、设计与可混合循环，完成对齐后按受众适配输出。
-- 工作区本地工单、首席研究员材料清单、物化引用和作用域方言。
+- Synthesis 的复盘与设计双过程：自然语言接续、问题回执、对齐、设计决定与 knowledge/design/mixed 基线。
+- 首席研究员、主代理双身份、研究顾问委员会与研究专员的研究协作模型。
+- 工作区本地工单、首席研究员材料清单、物化引用、参考边界和作用域方言。
 - Program superproject、Git submodule pin 与显式 cloneable 检查。
-- Synthesis 工作模型、复盘-对齐记录、标准对齐产物、冻结快照追踪与 HTML/Word 汇总报告生成。
-- 设计提案/决定/产物、研究顾问委员会、研究专员任务以及 knowledge/design/mixed 基线。
-- 独立 ReportPlan、ContentMap、NarrativePlan，以及 DOCX/HTML/PPT 统一编排和输出登记。
-- Synthesis 主题树与首席研究员控制的循环出口：继续、下钻、暂挂或跳出。
-- 首席研究员、主代理双身份、研究顾问委员会与研究专员的研究协作角色。
-- 来源信封、claim/fact/conflict 台账与置信度校验。
-- Markdown 报告、自包含 HTML 和 Word 输出。
-- 研究呈现设计方法、内容/布局 LR 与视觉返修流程。
-- 按版本发布，并在首席研究员明确要求时显式打包到 `publish/packed/`。
+- 独立 ReportPlan、ContentMap、NarrativePlan 与 ReportDocument。
+- DOCX、自包含 HTML、原生 PPTX 的统一编排、预览和输出登记。
+- DeckPlan/RenderLayout、实际软件渲染、逐页读图返修和发布视觉验收。
+- 来源信封、claim/fact/conflict 台账、Research IR、快照和置信度校验。
+- 不可变发布目录、稳定 release 副本、显式发布打包和开发阶段冷归档。
+- Git 历史审计、版本对象清理与重写验证流程。
+- 面向人的任务导航、权威规范、代理技能、模板和案例分层。
 - `research-cycle`、`presentation-design` 等代理工作技能。
 
 ## 目录
@@ -49,10 +50,15 @@ study-arca/
 
 ## 文档入口
 
+- [`docs/00-使用指南.md`](docs/00-使用指南.md)
 - [`docs/README.md`](docs/README.md)
 - [`docs/01-调研治理.md`](docs/01-调研治理.md)
+- [`docs/02-项目布局.md`](docs/02-项目布局.md)
+- [`docs/03-证据与溯源.md`](docs/03-证据与溯源.md)
+- [`docs/07-交付与PPT.md`](docs/07-交付与PPT.md)
 - [`docs/09-专业调研循环.md`](docs/09-专业调研循环.md)
 - [`docs/10-代理工作协议.md`](docs/10-代理工作协议.md)
+- [`docs/11-PPT设计方法与模式.md`](docs/11-PPT设计方法与模式.md)
 - [`docs/14-产品组件与资产.md`](docs/14-产品组件与资产.md)
 - [`docs/15-工作区身份工单与方言.md`](docs/15-工作区身份工单与方言.md)
 - [`docs/16-复盘对齐与适配输出.md`](docs/16-复盘对齐与适配输出.md)
