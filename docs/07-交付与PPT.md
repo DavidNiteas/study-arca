@@ -132,6 +132,19 @@ sa report archive <project> --id <report-id> --before v1.0 --verify
 - `archive/**/*.zip` 默认被 Git 忽略；manifest 入库用于记录恢复内容与归档哈希。
 - 此机制压缩当前工作树和后续提交噪声，但**不会自动重写已有 Git 历史**。需要缩小 `.git` 历史体积时，另做显式历史维护和备份。
 
+### 5.2 Git 历史维护
+
+历史重写会改变提交哈希，必须由用户明确授权。推荐流程：
+
+1. 先完成开发阶段归档，并关闭所有写操作，确认工作树 clean。
+2. 用 `git bundle create --all` 备份完整历史，并通过 `git bundle verify`。
+3. 用 `git filter-repo --dry-run` 和明确的路径 glob 检查过滤范围；优先只移除已被发布版本取代、且已进入冷归档的路径。
+4. 执行重写后运行 `git fsck --full --strict`，并验证目标旧路径为 0、当前发布路径仍完整。
+5. 保存旧/新 HEAD、过滤规则、备份 bundle 哈希和 `commit-map`。
+6. 更新 Program superproject 的子模块指针；协作者需要重新 clone 或显式同步新历史。
+
+历史重写不是常规发布步骤。只要远端已经共享旧历史，就必须先协调协作者并明确强制同步要求。
+
 ## 6. 交付验收
 
 - [ ] 三种格式的结论、数字、口径一致（以 `facts.json` 为准）
