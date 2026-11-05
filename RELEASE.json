@@ -2,7 +2,7 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-05T17:26:23+08:00",
+  "generated_at": "2026-11-05T17:27:54+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "master",
@@ -11,12 +11,12 @@
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "6a36b20f1cfc3cf7c9a3ed71e75990c140b46b2b"
+    "commit": "388799bbb9085f849e5929587b33797e69cd99f4"
   },
-  "tree_sha256": "fe27a64be5fd0eabdec108b9eabb201ab42436a26e822db8c8e82f1b1b012c6b",
+  "tree_sha256": "669d537eefae3acb245551738e07910e8450e39bd12b4a3e4ac39e7110d3ac2f",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
-    ".agents/skills/presentation-design/SKILL.md": "8fb33acdd6d3697b73152e78450f5e2ad09664523b1a7a90efdb145ce089c916",
+    ".agents/skills/presentation-design/SKILL.md": "ee96206202544d099da500aa6d37099c2e7bac0242e8604468f0656281c364ba",
     ".agents/skills/research-cycle/SKILL.md": "5122b35a565395ce0f131803559287de8b5bac9326e79ae6854aef02e099941e",
     ".agents/skills/workspace-system/SKILL.md": "ef7e5ddb7ced2f89327d52bbd92ace09ddc2161b16edc6f196b47687277a4790",
     ".gitattributes": "53bd72599f9e8cbed776d070e723b4333192ca7b3a3a55c199f7a02f854b923b",
@@ -36,7 +36,7 @@
     "docs/08-调研军火库.md": "fac6204053c507bc3f65833eda489bafd5338386d9c17848aacf396f0ba5fb07",
     "docs/09-专业调研循环.md": "92df4f8aac5100e7688cf3e297afc01271c89e6eb016794f10dcfc9d5e3ea4d8",
     "docs/10-代理工作协议.md": "33de093ff09c0b3befdc428bd3b36c4fb54a1ed9ef173ba5546c05afc32ef092",
-    "docs/11-PPT设计方法与模式.md": "c1155f865448840497fa0f393e1a8297d526768f3098c0608713100b84ae20ff",
+    "docs/11-PPT设计方法与模式.md": "90829893699bc0e46e4f52d329895dce340f0193c1795a7c06948496d2500a5b",
     "docs/12-系统定位与能力管理.md": "8434f596d8d337cbb7f6a42fd6a399f343efdc1c65afc5fa2966fbfbddd624d8",
     "docs/13-研究分析与论证.md": "55a25b87660cd792d2d7418adf795644a3b0d3f1a9aea6709db55d46a55e1802",
     "docs/14-产品组件与资产.md": "5ae557ceb4f45133ba6b1c981fc014d832b058d440df53b3769c1d94418dc6be",
