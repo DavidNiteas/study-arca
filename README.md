@@ -24,6 +24,54 @@ Program / Workspace / 材料 / 输出 / 发布物
 
 因此，代理软件是“前端”，`sa` 是“控制面和构建系统”，Workspace 是可迁移的数据与工作载体，skill 只是帮助代理正确使用这套系统的一种交付形态。
 
+## 人类快速开始
+
+第一次使用时，推荐让 Study Arca 与你的 Program 并排放置，然后把父目录交给代理软件：
+
+```text
+my-research/
+├── study-arca/       # 产品与规范
+└── main-program/     # 你的 Program、Workspace 和产物
+```
+
+### 1. 准备环境
+
+- Python 3.11；
+- Git；
+- 一个能够读取本地文件、执行命令并编辑工作区的代理软件，例如 Codex 或 Claude Code。
+
+### 2. 获取产品并创建 Program
+
+```powershell
+git clone https://github.com/DavidNiteas/study-arca.git
+python study-arca/scripts/sa.py program init main-program --id prog-main --title "我的研究 Program"
+```
+
+Program 应位于产品仓之外。它只保存成员关系与版本 pin，真实事实和产物保存在各个 Workspace 中。
+
+### 3. 在代理软件中打开父目录
+
+在 Codex、Claude Code 等代理中打开 `my-research/`，然后直接说明目标。例如：
+
+```text
+请先阅读 study-arca/AGENTS.md 和 study-arca/docs/00-使用指南.md。
+在 main-program 中建立一个 synthesis 工作区，接收我接下来提供的材料，并开始本轮复盘。
+```
+
+代理会按规范创建 Workspace、调用 `sa`、登记材料、维护状态并准备输出。人类负责目标、授权和审核，不需要手工执行每一个底层命令。
+
+### 4. 需要时检查命令入口
+
+```powershell
+# 查看工具能力
+python study-arca/scripts/sa.py --help
+
+# 产品自检
+python study-arca/scripts/sa.py selftest
+```
+
+Program 根按 `--program`、`SA_PROGRAM_ROOT`、当前目录祖先中的 `program.json` 依次发现。旧产品内 `work-root/` 与 `workspace/` 只作兼容并提示迁移。显式指定 Program 时，新工作区创建在 `<program>/nodes/`，保留独立 Git 仓库并挂载为 Program 子节点。
+
 ## 核心思想
 
 ```text
@@ -136,54 +184,6 @@ PPT 编译是有设计的压缩，不是无损复制。编译器必须保证被�
 - 发布压缩包、开发历史冷归档和 Git 历史维护；
 - 面向人的使用指南、规范中心、代理技能、模板和案例；
 - Program 子模块、递归 cloneable 检查和离线迁移包。
-
-## 人类快速开始
-
-第一次使用时，推荐让 Study Arca 与你的 Program 并排放置，然后把父目录交给代理软件：
-
-```text
-my-research/
-├── study-arca/       # 产品与规范
-└── main-program/     # 你的 Program、Workspace 和产物
-```
-
-### 1. 准备环境
-
-- Python 3.11；
-- Git；
-- 一个能够读取本地文件、执行命令并编辑工作区的代理软件，例如 Codex 或 Claude Code。
-
-### 2. 获取产品并创建 Program
-
-```powershell
-git clone https://github.com/DavidNiteas/study-arca.git
-python study-arca/scripts/sa.py program init main-program --id prog-main --title "我的研究 Program"
-```
-
-Program 应位于产品仓之外。它只保存成员关系与版本 pin，真实事实和产物保存在各个 Workspace 中。
-
-### 3. 在代理软件中打开父目录
-
-在 Codex、Claude Code 等代理中打开 `my-research/`，然后直接说明目标。例如：
-
-```text
-请先阅读 study-arca/AGENTS.md 和 study-arca/docs/00-使用指南.md。
-在 main-program 中建立一个 synthesis 工作区，接收我接下来提供的材料，并开始本轮复盘。
-```
-
-代理会按规范创建 Workspace、调用 `sa`、登记材料、维护状态并准备输出。人类负责目标、授权和审核，不需要手工执行每一个底层命令。
-
-### 4. 需要时检查命令入口
-
-```powershell
-# 查看工具能力
-python study-arca/scripts/sa.py --help
-
-# 产品自检
-python study-arca/scripts/sa.py selftest
-```
-
-Program 根按 `--program`、`SA_PROGRAM_ROOT`、当前目录祖先中的 `program.json` 依次发现。旧产品内 `work-root/` 与 `workspace/` 只作兼容并提示迁移。显式指定 Program 时，新工作区创建在 `<program>/nodes/`，保留独立 Git 仓库并挂载为 Program 子节点。
 
 ## 典型流程
 

@@ -2,7 +2,7 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-06T15:14:42+08:00",
+  "generated_at": "2026-11-06T15:28:14+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "main",
@@ -11,9 +11,9 @@
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "00d4e58b7d7937b478e2fcea9a65ff569e2157f8"
+    "commit": "9e145f0fefdc146cd3fe5c70e0e2793e86e41534"
   },
-  "tree_sha256": "6fd334488becba9e8bb188c5962e40d54b5cad5769325afe9a46ce7132155d59",
+  "tree_sha256": "411e3b9c37490504c17f5b5892979585f73c6113b67c01368a9a291e0310e2da",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "ee96206202544d099da500aa6d37099c2e7bac0242e8604468f0656281c364ba",
@@ -24,8 +24,8 @@
     "AGENTS.md": "36a29c24c7c28a7d93c65e2f0042c578f374265cab34f73ba445f633228e7541",
     "HANDOVER.md": "a3b159e4555b73644fc6fdae49d7809428ad2ff51ac73ec6b021646f85dc2065",
     "LICENSE": "c8bc8cd66076ca949cff00108295172db43ddf9c8c606e5e60f2677d19222f6c",
-    "README.en.md": "3722a7270f590ed248b908f5b9025d43b484b8bab6ab4eb81ab47c5f883443cf",
-    "README.md": "8d399fd0301dba4716f577e5f108ff796826b3731860f87e9afda44223e9b100",
+    "README.en.md": "4a8c601265c8ff71b5afaeb74559159143487418416e07c8c32960a1f095edeb",
+    "README.md": "7bee8772db675dfa59926db35b62f9e3cb1f4a81855e4790aa8875f782b01439",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/00-使用指南.md": "573d8e677b76ce2cb3b154dc97f53f5329c946a26fff648ccfd707d609c36257",
     "docs/01-调研治理.md": "feea65cce4e754ffa98b7a585b5536e184f4c1cd14294706b3103922f1d67650",

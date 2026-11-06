@@ -24,6 +24,58 @@ Program / Workspace / materials / outputs / releases
 
 The agent application is therefore the frontend, `sa` is the control plane and build system, a Workspace is the portable unit of data and work, and a skill is one delivery form that helps the agent operate the system correctly.
 
+## Human quick start
+
+For first use, place Study Arca beside your Program and open their parent directory in the agent application:
+
+```text
+my-research/
+├── study-arca/       # product and specifications
+└── main-program/     # your Program, Workspaces, and outputs
+```
+
+### 1. Prepare the environment
+
+- Python 3.11;
+- Git;
+- an agent application that can read local files, execute commands, and edit Workspaces, such as Codex or Claude Code.
+
+### 2. Get the product and create a Program
+
+```powershell
+git clone https://github.com/DavidNiteas/study-arca.git
+python study-arca/scripts/sa.py program init main-program --id prog-main --title "My Research Program"
+```
+
+The Program must live outside the product checkout. It stores only membership and version pins; facts and outputs belong to individual Workspaces.
+
+### 3. Open the parent directory in your agent
+
+Open `my-research/` in Codex, Claude Code, or another compatible agent, then state the outcome. For example:
+
+```text
+First read study-arca/AGENTS.md and study-arca/docs/00-使用指南.md.
+Create a synthesis Workspace in main-program, receive the materials I provide next, and begin this review round.
+```
+
+The agent creates the Workspace, invokes `sa`, registers materials, maintains state, and prepares outputs according to the specifications. The human owns goals, authorization, and review and does not need to run every low-level command manually.
+
+### 4. Inspect command entry points when needed
+
+```powershell
+python study-arca/scripts/sa.py --help
+python study-arca/scripts/sa.py selftest
+```
+
+Program resolution order is:
+
+1. `--program <path>`;
+2. `SA_PROGRAM_ROOT`;
+3. nearest ancestor `program.json`;
+4. legacy product-local `work-root/` or `workspace/`, with a migration warning.
+
+If a Program is specified, the new Workspace is created under `<program>/nodes/`, keeps its own Git repository, and is attached as a Program child.
+
 ## Core model
 
 ```text
@@ -128,58 +180,6 @@ Presentation compilation intentionally compresses information. The compiler must
 - explicit release packaging, development-history archives, and Git history maintenance;
 - human documentation, agent skills, templates, and cases;
 - Program submodules, recursive cloneable checks, and offline bundles.
-
-## Human quick start
-
-For first use, place Study Arca beside your Program and open their parent directory in the agent application:
-
-```text
-my-research/
-├── study-arca/       # product and specifications
-└── main-program/     # your Program, Workspaces, and outputs
-```
-
-### 1. Prepare the environment
-
-- Python 3.11;
-- Git;
-- an agent application that can read local files, execute commands, and edit Workspaces, such as Codex or Claude Code.
-
-### 2. Get the product and create a Program
-
-```powershell
-git clone https://github.com/DavidNiteas/study-arca.git
-python study-arca/scripts/sa.py program init main-program --id prog-main --title "My Research Program"
-```
-
-The Program must live outside the product checkout. It stores only membership and version pins; facts and outputs belong to individual Workspaces.
-
-### 3. Open the parent directory in your agent
-
-Open `my-research/` in Codex, Claude Code, or another compatible agent, then state the outcome. For example:
-
-```text
-First read study-arca/AGENTS.md and study-arca/docs/00-使用指南.md.
-Create a synthesis Workspace in main-program, receive the materials I provide next, and begin this review round.
-```
-
-The agent creates the Workspace, invokes `sa`, registers materials, maintains state, and prepares outputs according to the specifications. The human owns goals, authorization, and review and does not need to run every low-level command manually.
-
-### 4. Inspect command entry points when needed
-
-```powershell
-python study-arca/scripts/sa.py --help
-python study-arca/scripts/sa.py selftest
-```
-
-Program resolution order is:
-
-1. `--program <path>`;
-2. `SA_PROGRAM_ROOT`;
-3. nearest ancestor `program.json`;
-4. legacy product-local `work-root/` or `workspace/`, with a migration warning.
-
-If a Program is specified, the new Workspace is created under `<program>/nodes/`, keeps its own Git repository, and is attached as a Program child.
 
 ## Representative workflows
 
