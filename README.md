@@ -6,6 +6,24 @@ Study Arca 把研究信息当作**可寻址、可引用、可验证、可版本�
 
 它不只管理“文档”，而是管理信息从来源、理解、设计、冻结、编排到发布的整个生命周期。
 
+## 这是什么类型的软件？
+
+Study Arca 不只是一个 skill 包，也不是必须附带独立桌面的传统研究软件。它是一套**以通用代理软件作为交互前端的软件解决方案**。
+
+它不自带聊天窗口、编辑器或研究工作台，而是把自然语言交互、文件访问、命令执行和工具调用交给 Codex、Claude Code（CC）等具备相应能力的代理软件。Study Arca 自身提供工作区协议、代理规范、技能路由、确定性 CLI、校验器、状态模型、快照、报告与 PPT 编译，以及发布治理。
+
+```text
+人类
+  ↕ 自然语言与审核
+代理软件（Codex / Claude Code 等）
+  ↕ 读取规范、调用工具、编辑工作区
+Study Arca（协议 / 技能 / sa CLI / 校验 / 状态 / 渲染）
+  ↕
+Program / Workspace / 材料 / 输出 / 发布物
+```
+
+因此，代理软件是“前端”，`sa` 是“控制面和构建系统”，Workspace 是可迁移的数据与工作载体，skill 只是帮助代理正确使用这套系统的一种交付形态。
+
 ## 核心思想
 
 ```text
@@ -119,24 +137,50 @@ PPT 编译是有设计的压缩，不是无损复制。编译器必须保证被�
 - 面向人的使用指南、规范中心、代理技能、模板和案例；
 - Program 子模块、递归 cloneable 检查和离线迁移包。
 
-## 快速开始
+## 人类快速开始
+
+第一次使用时，推荐让 Study Arca 与你的 Program 并排放置，然后把父目录交给代理软件：
+
+```text
+my-research/
+├── study-arca/       # 产品与规范
+└── main-program/     # 你的 Program、Workspace 和产物
+```
+
+### 1. 准备环境
+
+- Python 3.11；
+- Git；
+- 一个能够读取本地文件、执行命令并编辑工作区的代理软件，例如 Codex 或 Claude Code。
+
+### 2. 获取产品并创建 Program
 
 ```powershell
-# 首次使用：在用户选择的位置创建 Program
-python scripts/sa.py program init <program-path> --id prog-main --title "我的研究 Program"
+git clone https://github.com/DavidNiteas/study-arca.git
+python study-arca/scripts/sa.py program init main-program --id prog-main --title "我的研究 Program"
+```
 
-# 在 Program 中创建工作区
-python scripts/sa.py new market-scan --title "市场扫描" --type research --program <program-path>
-python scripts/sa.py new project-review --title "阶段复盘" --type synthesis --program <program-path>
+Program 应位于产品仓之外。它只保存成员关系与版本 pin，真实事实和产物保存在各个 Workspace 中。
 
+### 3. 在代理软件中打开父目录
+
+在 Codex、Claude Code 等代理中打开 `my-research/`，然后直接说明目标。例如：
+
+```text
+请先阅读 study-arca/AGENTS.md 和 study-arca/docs/00-使用指南.md。
+在 main-program 中建立一个 synthesis 工作区，接收我接下来提供的材料，并开始本轮复盘。
+```
+
+代理会按规范创建 Workspace、调用 `sa`、登记材料、维护状态并准备输出。人类负责目标、授权和审核，不需要手工执行每一个底层命令。
+
+### 4. 需要时检查命令入口
+
+```powershell
 # 查看工具能力
-python scripts/sa.py --help
-python scripts/sa.py report --help
-python scripts/sa.py synthesis --help
-python scripts/sa.py deck --help
+python study-arca/scripts/sa.py --help
 
 # 产品自检
-python scripts/sa.py selftest
+python study-arca/scripts/sa.py selftest
 ```
 
 Program 根按 `--program`、`SA_PROGRAM_ROOT`、当前目录祖先中的 `program.json` 依次发现。旧产品内 `work-root/` 与 `workspace/` 只作兼容并提示迁移。显式指定 Program 时，新工作区创建在 `<program>/nodes/`，保留独立 Git 仓库并挂载为 Program 子节点。

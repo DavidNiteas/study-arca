@@ -6,6 +6,24 @@ Study Arca treats research information as **addressable, referenceable, verifiab
 
 It manages more than documents. It manages the lifecycle of information from source intake and interpretation through design, freezing, composition, rendering, review, and publication.
 
+## What kind of software is this?
+
+Study Arca is more than a skill collection, and it is not a traditional research application with a dedicated desktop interface. It is a **software solution whose interaction frontend is a general-purpose agent application**.
+
+It does not ship a chat window, editor, or research workbench. Natural-language interaction, file access, command execution, and tool use are provided by capable agent software such as Codex or Claude Code. Study Arca supplies the workspace protocol, agent specifications, skill routing, deterministic CLI, validators, state model, snapshots, report and presentation compilation, and release governance.
+
+```text
+Human
+  ↕ natural language and review
+Agent application (Codex / Claude Code, etc.)
+  ↕ read specifications, call tools, edit Workspaces
+Study Arca (protocols / skills / sa CLI / validation / state / rendering)
+  ↕
+Program / Workspace / materials / outputs / releases
+```
+
+The agent application is therefore the frontend, `sa` is the control plane and build system, a Workspace is the portable unit of data and work, and a skill is one delivery form that helps the agent operate the system correctly.
+
 ## Core model
 
 ```text
@@ -111,18 +129,47 @@ Presentation compilation intentionally compresses information. The compiler must
 - human documentation, agent skills, templates, and cases;
 - Program submodules, recursive cloneable checks, and offline bundles.
 
-## Quick start
+## Human quick start
+
+For first use, place Study Arca beside your Program and open their parent directory in the agent application:
+
+```text
+my-research/
+├── study-arca/       # product and specifications
+└── main-program/     # your Program, Workspaces, and outputs
+```
+
+### 1. Prepare the environment
+
+- Python 3.11;
+- Git;
+- an agent application that can read local files, execute commands, and edit Workspaces, such as Codex or Claude Code.
+
+### 2. Get the product and create a Program
 
 ```powershell
-# Create a Program at a path chosen by the user
-python scripts/sa.py program init <program-path> --id prog-main --title "My Research Program"
+git clone https://github.com/DavidNiteas/study-arca.git
+python study-arca/scripts/sa.py program init main-program --id prog-main --title "My Research Program"
+```
 
-# Create Workspaces inside that Program
-python scripts/sa.py new market-scan --title "Market scan" --type research --program <program-path>
-python scripts/sa.py new project-review --title "Project review" --type synthesis --program <program-path>
+The Program must live outside the product checkout. It stores only membership and version pins; facts and outputs belong to individual Workspaces.
 
-python scripts/sa.py --help
-python scripts/sa.py selftest
+### 3. Open the parent directory in your agent
+
+Open `my-research/` in Codex, Claude Code, or another compatible agent, then state the outcome. For example:
+
+```text
+First read study-arca/AGENTS.md and study-arca/docs/00-使用指南.md.
+Create a synthesis Workspace in main-program, receive the materials I provide next, and begin this review round.
+```
+
+The agent creates the Workspace, invokes `sa`, registers materials, maintains state, and prepares outputs according to the specifications. The human owns goals, authorization, and review and does not need to run every low-level command manually.
+
+### 4. Inspect command entry points when needed
+
+```powershell
+python study-arca/scripts/sa.py --help
+python study-arca/scripts/sa.py selftest
 ```
 
 Program resolution order is:

@@ -4,6 +4,24 @@
 
 Study Arca is a human-agent research collaboration system. Its unit of value is a self-contained Workspace that another agent can understand and continue after migration.
 
+## Product form: the agent application is the frontend
+
+Study Arca adopts a new software form. It does not require a dedicated desktop, web IDE, or chat interface as its frontend. Instead, it uses general-purpose agent applications such as Codex or Claude Code for natural-language interaction, file access, command execution, and tool use.
+
+```text
+Human ↔ general-purpose agent ↔ Study Arca protocols, skills, and sa control plane ↔ Program / Workspace / outputs
+```
+
+In this division:
+
+- humans define goals, authorize scope, and review results;
+- the general-purpose agent is the interaction frontend and execution environment;
+- Study Arca supplies checkable protocols, deterministic tools, state, and validation;
+- Programs and Workspaces preserve portable ownership, facts, and outputs;
+- skills are one agent entry form, not the definition of Study Arca.
+
+Study Arca therefore neither requires humans to drive every CLI command directly nor fixes a specific model or vendor as a product dependency. In normal use, humans state an outcome in natural language; the agent follows repository specifications and skills; and `sa` turns critical actions into repeatable, verifiable machine operations.
+
 ## Division of responsibility
 
 - Workflow specifications define research behavior.

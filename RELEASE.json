@@ -2,7 +2,7 @@
   "schema": "sa.release/2",
   "product": "study-arca",
   "version": "0.1.0",
-  "generated_at": "2026-11-06T01:02:41+08:00",
+  "generated_at": "2026-11-06T15:12:36+08:00",
   "development": {
     "repository": "study-arca-dev",
     "branch": "main",
@@ -11,9 +11,9 @@
   "product_state": {
     "repository": "study-arca",
     "branch": "main",
-    "commit": "daddbbbffb17d8de43f98ab067682f786e642295"
+    "commit": "5e76e647da2bde411525e0e0f3adf6c6905b7b79"
   },
-  "tree_sha256": "1deb2b45bc17c76238353dcdff5b0e376063037585a3675c44588b6ef9c564a8",
+  "tree_sha256": "6fd334488becba9e8bb188c5962e40d54b5cad5769325afe9a46ce7132155d59",
   "files": {
     ".agents/README.md": "24141e4eacefe5d0d122f68b36e75689d2584831b17a2c150d42d721ae59ed58",
     ".agents/skills/presentation-design/SKILL.md": "ee96206202544d099da500aa6d37099c2e7bac0242e8604468f0656281c364ba",
@@ -24,8 +24,8 @@
     "AGENTS.md": "36a29c24c7c28a7d93c65e2f0042c578f374265cab34f73ba445f633228e7541",
     "HANDOVER.md": "a3b159e4555b73644fc6fdae49d7809428ad2ff51ac73ec6b021646f85dc2065",
     "LICENSE": "c8bc8cd66076ca949cff00108295172db43ddf9c8c606e5e60f2677d19222f6c",
-    "README.en.md": "47dffee00d8a6a530a2aecc9ff91fb2122bd6f2b5a6f159e978dcf6b08458026",
-    "README.md": "ed37d18ef6570556343221e4a91de2983d4d7992846355b2eb6b0ebdf4cb0d56",
+    "README.en.md": "3722a7270f590ed248b908f5b9025d43b484b8bab6ab4eb81ab47c5f883443cf",
+    "README.md": "8d399fd0301dba4716f577e5f108ff796826b3731860f87e9afda44223e9b100",
     "VERSION": "3d097c315a1c543040f548da4c7051265e94c77211a2411ced1d4621344270de",
     "docs/00-使用指南.md": "573d8e677b76ce2cb3b154dc97f53f5329c946a26fff648ccfd707d609c36257",
     "docs/01-调研治理.md": "feea65cce4e754ffa98b7a585b5536e184f4c1cd14294706b3103922f1d67650",
@@ -39,7 +39,7 @@
     "docs/09-专业调研循环.md": "a141632aa833cbc0305de7f1275f4d37b74bc54bb345843f168be0e923e9a145",
     "docs/10-代理工作协议.md": "4b26cd9ac290221eb3f75f036549ae755cecafc08fd82dc91bae597ddaa28e01",
     "docs/11-PPT设计方法与模式.md": "24d0e135dd1ef2ba0918349fdbd71720d009984d1fe23a54cb4daa35869f6985",
-    "docs/12-系统定位与能力管理.md": "e34a374fe2b13482c04315601fcb77d27af225c783982253c64b67396baf13cc",
+    "docs/12-系统定位与能力管理.md": "95492c902d7096737d267de1b0df38fd53a23ecfd5351178c7f57cd3ac3b4174",
     "docs/13-研究分析与论证.md": "9e97ff01df2672594ba7320d13db787636bb70c280f26693fcbefede3ea6139e",
     "docs/14-产品组件与资产.md": "85045a55bc71e5e4fe6bfe45b31d2be8d6028b5a81b6fd9dc035f36b3561876f",
     "docs/15-工作区身份工单与方言.md": "fa3dd021bc48107879367554e276ee36e5c7e93f06fa344f5e6eacdded59efca",
@@ -58,7 +58,7 @@
     "docs/en/08-research-toolbox.md": "5e9be49855dbfe97a4e30444a084f40f1e3db586ee51ccb1d71368fa8f8fb814",
     "docs/en/09-research-loop.md": "c11ed88aceffd79da910c6e197fa898d8c87b5d617c22a4bcefdcf0ab817972b",
     "docs/en/11-ppt-design.md": "7d717d9c7d82a8b91d992c97cd2b6dd240c73f8fc6d8fbe65c0e2cb93a0aa5ae",
-    "docs/en/12-system-scope.md": "534df0e2d650a8b29444fad8589accd01ff62222df7168d1f6f3e0d58bfa559d",
+    "docs/en/12-system-scope.md": "9b71f61d380a59906126f48afcead57939e5d7299b67b4f071754af4bc6b1ecb",
     "docs/en/13-analysis-and-argument.md": "05fa3290203407bd9ea2366578b0087255a6295d860bf55182252f7678e7bbe2",
     "docs/en/14-product-components.md": "04d5b0c71ee9e19117ba7c1c4be2a35bbdea616072041a1922804d40b362bd6c",
     "docs/en/15-workspaces-and-programs.md": "0a149ec5de7a19e9443f2cf2d5852809a3e16e2b7dbd7a299a9b7b37ac38815f",
